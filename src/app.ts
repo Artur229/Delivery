@@ -3,6 +3,7 @@ import { apiReference } from "@scalar/hono-api-reference";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
 import { authRoute } from "./routes/auth.js";
+import { cartRoute } from "./routes/cart.js";
 import { catalogRoute } from "./routes/catalog.js";
 import { healthRoute } from "./routes/health.js";
 import { inventoryRoute } from "./routes/inventory.js";
@@ -27,6 +28,7 @@ app.route("/auth", authRoute);
 app.route("/", usersRoute);
 app.route("/", catalogRoute);
 app.route("/", inventoryRoute);
+app.route("/", cartRoute);
 
 app.doc("/api/openapi.json", {
   openapi: "3.0.0",
