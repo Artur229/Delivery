@@ -11,11 +11,13 @@ import { db } from "../db/client.js";
 import { cartItems, carts, orderItems, orders, products, users } from "../db/schema.js";
 import { badRequest, forbidden, notFound } from "../lib/errors.js";
 import { logger } from "../lib/logger.js";
+import { sendToRoles, sendToUser } from "../lib/realtime.js";
 import { authRequired, type AppBindings } from "../middleware/auth.js";
 import { allowRoles } from "../middleware/roles.js";
 
 const authOnly = [authRequired];
 const staffOnly = [authRequired, allowRoles(["owner", "admin", "chef", "courier"])];
+const orderSubscriberRoles: Role[] = ["owner", "admin", "chef", "courier"];
 
 const errorResponseSchema = z.object({
   error: z.string(),
@@ -403,7 +405,19 @@ export const ordersRoute = new OpenAPIHono<AppBindings>()
       totalPrice: createdOrder.totalPrice,
     });
 
-    return c.json(toOrderResponse(await getOrderWithItems(createdOrder.id)), 201);
+    const response = toOrderResponse(await getOrderWithItems(createdOrder.id));
+
+    sendToUser(currentUser.id, "cart_updated", {
+      id: cart.id,
+      userId: currentUser.id,
+      updatedAt: new Date().toISOString(),
+      items: [],
+      totalPrice: "0.00",
+    });
+    sendToUser(currentUser.id, "order_updated", response);
+    sendToRoles(orderSubscriberRoles, "order_updated", response);
+
+    return c.json(response, 201);
   })
   .openapi(listMyOrdersRoute, async (c) => {
     const currentUser = c.get("currentUser");
@@ -500,5 +514,13 @@ export const ordersRoute = new OpenAPIHono<AppBindings>()
       to: updatedOrder.status,
     });
 
-    return c.json(toOrderResponse(await getOrderWithItems(updatedOrder.id)), 200);
+    const response = toOrderResponse(await getOrderWithItems(updatedOrder.id));
+
+    if (response.userId) {
+      sendToUser(response.userId, "order_updated", response);
+    }
+
+    sendToRoles(orderSubscriberRoles, "order_updated", response);
+
+    return c.json(response, 200);
   });

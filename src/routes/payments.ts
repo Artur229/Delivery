@@ -2,14 +2,17 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { env } from "../config/env.js";
+import type { Role } from "../constants/roles.js";
 import { db } from "../db/client.js";
 import { orders } from "../db/schema.js";
 import { badRequest, forbidden, notFound } from "../lib/errors.js";
 import { logger } from "../lib/logger.js";
+import { sendToRoles, sendToUser } from "../lib/realtime.js";
 import { getStripe } from "../lib/stripe.js";
 import { authRequired, type AppBindings } from "../middleware/auth.js";
 
 const authOnly = [authRequired];
+const orderSubscriberRoles: Role[] = ["owner", "admin", "chef", "courier"];
 
 const errorResponseSchema = z.object({
   error: z.string(),
@@ -85,6 +88,43 @@ const getOrder = async (orderId: string) => {
   }
 
   return order;
+};
+
+const toOrderPaymentResponse = (order: Awaited<ReturnType<typeof getOrder>>) => ({
+  id: order.id,
+  userId: order.userId,
+  totalPrice: order.totalPrice,
+  status: order.status,
+  deliveryType: order.deliveryType,
+  address: order.address,
+  phone: order.phone,
+  paymentType: order.paymentType,
+  paymentStatus: order.paymentStatus,
+  createdAt: order.createdAt?.toISOString() ?? null,
+  items: order.items.map((item) => ({
+    id: item.id,
+    productId: item.productId,
+    quantity: item.quantity,
+    price: item.price,
+    product: item.product
+      ? {
+          id: item.product.id,
+          name: item.product.name,
+          slug: item.product.slug,
+          cover: item.product.cover,
+        }
+      : null,
+  })),
+});
+
+const broadcastOrderPaymentUpdate = async (orderId: string) => {
+  const response = toOrderPaymentResponse(await getOrder(orderId));
+
+  if (response.userId) {
+    sendToUser(response.userId, "order_updated", response);
+  }
+
+  sendToRoles(orderSubscriberRoles, "order_updated", response);
 };
 
 const updateOrderPaymentSuccess = async (orderId: string) => {
@@ -255,6 +295,7 @@ export const paymentsRoute = new OpenAPIHono<AppBindings>()
 
       if (orderId) {
         await updateOrderPaymentSuccess(orderId);
+        await broadcastOrderPaymentUpdate(orderId);
         logger.info("payments", "stripe checkout completed", {
           orderId,
           sessionId: session.id,
@@ -268,6 +309,7 @@ export const paymentsRoute = new OpenAPIHono<AppBindings>()
 
       if (orderId) {
         await updateOrderPaymentFailure(orderId);
+        await broadcastOrderPaymentUpdate(orderId);
         logger.warn("payments", "stripe payment failed", {
           orderId,
           paymentIntentId: paymentIntent.id,
@@ -281,6 +323,7 @@ export const paymentsRoute = new OpenAPIHono<AppBindings>()
 
       if (orderId) {
         await updateOrderPaymentRefunded(orderId);
+        await broadcastOrderPaymentUpdate(orderId);
         logger.info("payments", "stripe charge refunded", {
           orderId,
           chargeId: charge.id,

@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { cartItems, carts, products } from "../db/schema.js";
 import { notFound } from "../lib/errors.js";
+import { sendToUser } from "../lib/realtime.js";
 import { authRequired, type AppBindings } from "../middleware/auth.js";
 
 const authOnly = [authRequired];
@@ -323,7 +324,10 @@ export const cartRoute = new OpenAPIHono<AppBindings>()
 
     await touchCart(cart.id);
 
-    return c.json(toCartResponse(await getCartWithItems(currentUser.id)), 200);
+    const response = toCartResponse(await getCartWithItems(currentUser.id));
+    sendToUser(currentUser.id, "cart_updated", response);
+
+    return c.json(response, 200);
   })
   .openapi(updateCartItemRoute, async (c) => {
     const currentUser = c.get("currentUser");
@@ -345,7 +349,10 @@ export const cartRoute = new OpenAPIHono<AppBindings>()
 
     await touchCart(cart.id);
 
-    return c.json(toCartResponse(await getCartWithItems(currentUser.id)), 200);
+    const response = toCartResponse(await getCartWithItems(currentUser.id));
+    sendToUser(currentUser.id, "cart_updated", response);
+
+    return c.json(response, 200);
   })
   .openapi(deleteCartItemRoute, async (c) => {
     const currentUser = c.get("currentUser");
@@ -363,7 +370,10 @@ export const cartRoute = new OpenAPIHono<AppBindings>()
 
     await touchCart(cart.id);
 
-    return c.json(toCartResponse(await getCartWithItems(currentUser.id)), 200);
+    const response = toCartResponse(await getCartWithItems(currentUser.id));
+    sendToUser(currentUser.id, "cart_updated", response);
+
+    return c.json(response, 200);
   })
   .openapi(clearCartRoute, async (c) => {
     const currentUser = c.get("currentUser");
@@ -371,6 +381,12 @@ export const cartRoute = new OpenAPIHono<AppBindings>()
 
     await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
     await touchCart(cart.id);
+
+    sendToUser(
+      currentUser.id,
+      "cart_updated",
+      toCartResponse(await getCartWithItems(currentUser.id)),
+    );
 
     return c.json(successResponse, 200);
   });
