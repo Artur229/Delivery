@@ -4,6 +4,7 @@ import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
 import { authRoute } from "./routes/auth.js";
 import { healthRoute } from "./routes/health.js";
+import { usersRoute } from "./routes/users.js";
 
 export const app = new OpenAPIHono();
 
@@ -21,6 +22,7 @@ app.notFound((c) => {
 
 app.route("/", healthRoute);
 app.route("/auth", authRoute);
+app.route("/", usersRoute);
 
 app.doc("/api/openapi.json", {
   openapi: "3.0.0",

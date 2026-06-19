@@ -8,23 +8,11 @@ import { signAuthToken, verifyAuthToken } from "../lib/jwt.js";
 import { logger } from "../lib/logger.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { createUniqueSlug } from "../lib/slug.js";
+import { toUserResponse, userResponseSchema } from "../lib/user.js";
 
 const accessTokenExpiresIn = "15m";
 const refreshTokenExpiresIn = "30d";
 const refreshTokenTtlMs = 30 * 24 * 60 * 60 * 1000;
-
-const userResponseSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  slug: z.string(),
-  email: z.string().email(),
-  role: z.enum(roles),
-  cover: z.string().nullable(),
-  phone: z.string().nullable(),
-  address: z.string().nullable(),
-  isBlockedFromReviews: z.boolean().nullable(),
-  createdAt: z.string().nullable(),
-});
 
 const authResponseSchema = z.object({
   user: userResponseSchema,
@@ -57,19 +45,6 @@ const refreshBodySchema = z.object({
 
 const logoutBodySchema = z.object({
   refreshToken: z.string().min(1),
-});
-
-const toUserResponse = (user: typeof users.$inferSelect) => ({
-  id: user.id,
-  name: user.name,
-  slug: user.slug,
-  email: user.email,
-  role: user.role,
-  cover: user.cover,
-  phone: user.phone,
-  address: user.address,
-  isBlockedFromReviews: user.isBlockedFromReviews,
-  createdAt: user.createdAt?.toISOString() ?? null,
 });
 
 const createTokenPair = async (user: Pick<typeof users.$inferSelect, "id" | "role">) => {
