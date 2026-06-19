@@ -1,8 +1,22 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
+import { errorHandler } from "./middleware/error-handler.js";
+import { requestLogger } from "./middleware/request-logger.js";
 import { healthRoute } from "./routes/health.js";
 
 export const app = new OpenAPIHono();
+
+app.use("*", requestLogger);
+app.onError(errorHandler);
+app.notFound((c) => {
+  return c.json(
+    {
+      error: "Not found",
+      code: 404,
+    },
+    404,
+  );
+});
 
 app.route("/", healthRoute);
 

@@ -60,14 +60,14 @@ Backend для food delivery:
 
 ### 2. Shared Infrastructure
 
-- [ ] Єдиний формат помилок: `{ "error": "message", "code": 400 }`.
-- [ ] Error middleware.
-- [ ] Logger wrapper для auth, orders, payments, admin actions.
-- [ ] Slug utility.
-- [ ] Password hash utility через bcrypt.
-- [ ] JWT utility.
-- [ ] Auth middleware.
-- [ ] Role middleware: `allowRoles(["owner", "admin"])`.
+- [x] Єдиний формат помилок: `{ "error": "message", "code": 400 }`.
+- [x] Error middleware.
+- [x] Logger wrapper для auth, orders, payments, admin actions.
+- [x] Slug utility.
+- [x] Password hash utility через bcrypt.
+- [x] JWT utility.
+- [x] Auth middleware.
+- [x] Role middleware: `allowRoles(["owner", "admin"])`.
 
 ### 3. Database Schema
 

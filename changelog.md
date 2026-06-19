@@ -82,3 +82,55 @@
 ### Next step
 
 - Запушити `main` у GitHub repository.
+
+### Shared infrastructure
+
+- Виконано крок 2 з `plan.md`: shared infrastructure.
+- Додано dependency `bcryptjs` для password hashing.
+- Додано dependency `jose` для JWT signing/verification.
+- Додано roles constants: `owner`, `admin`, `customer`, `chef`, `courier`.
+- Додано `AppError` і helpers для стандартних HTTP помилок.
+- Додано error handler з форматом відповіді `{ "error": "message", "code": 400 }`.
+- Додано `notFound` handler для JSON 404.
+- Додано request logger і structured logger для scopes: `auth`, `orders`, `payments`, `admin`, `system`.
+- Додано slug utilities:
+  - `createSlug`
+  - `createUniqueSlug`
+- Додано password utilities:
+  - `hashPassword`
+  - `verifyPassword`
+- Додано JWT utilities:
+  - `signAuthToken`
+  - `verifyAuthToken`
+- Додано auth middleware:
+  - `authRequired`
+- Додано role middleware:
+  - `allowRoles(["owner", "admin"])`
+- Підключено request logger, error handler і 404 handler в `src/app.ts`.
+- Перевірено `npm run typecheck` - успішно.
+- Перевірено `npm run build` - успішно.
+- Запущено dev server і перевірено:
+  - `GET /health` повертає `status: "ok"`.
+  - невідомий route повертає JSON `{ "error": "Not found", "code": 404 }`.
+
+### Changed files
+
+- `package.json`
+- `package-lock.json`
+- `src/app.ts`
+- `src/constants/roles.ts`
+- `src/lib/errors.ts`
+- `src/lib/jwt.ts`
+- `src/lib/logger.ts`
+- `src/lib/password.ts`
+- `src/lib/slug.ts`
+- `src/middleware/auth.ts`
+- `src/middleware/error-handler.ts`
+- `src/middleware/request-logger.ts`
+- `src/middleware/roles.ts`
+- `plan.md`
+- `changelog.md`
+
+### Next step
+
+- Перейти до кроку 3 з `plan.md`: Database Schema через Drizzle.
