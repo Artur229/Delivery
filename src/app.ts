@@ -7,6 +7,7 @@ import { cartRoute } from "./routes/cart.js";
 import { catalogRoute } from "./routes/catalog.js";
 import { healthRoute } from "./routes/health.js";
 import { inventoryRoute } from "./routes/inventory.js";
+import { ordersRoute } from "./routes/orders.js";
 import { usersRoute } from "./routes/users.js";
 
 export const app = new OpenAPIHono();
@@ -29,6 +30,7 @@ app.route("/", usersRoute);
 app.route("/", catalogRoute);
 app.route("/", inventoryRoute);
 app.route("/", cartRoute);
+app.route("/", ordersRoute);
 
 app.doc("/api/openapi.json", {
   openapi: "3.0.0",
