@@ -5,6 +5,7 @@ import { requestLogger } from "./middleware/request-logger.js";
 import { authRoute } from "./routes/auth.js";
 import { catalogRoute } from "./routes/catalog.js";
 import { healthRoute } from "./routes/health.js";
+import { inventoryRoute } from "./routes/inventory.js";
 import { usersRoute } from "./routes/users.js";
 
 export const app = new OpenAPIHono();
@@ -25,6 +26,7 @@ app.route("/", healthRoute);
 app.route("/auth", authRoute);
 app.route("/", usersRoute);
 app.route("/", catalogRoute);
+app.route("/", inventoryRoute);
 
 app.doc("/api/openapi.json", {
   openapi: "3.0.0",
