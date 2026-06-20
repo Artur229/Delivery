@@ -19,11 +19,50 @@
   $: isGuest = !getAccessToken();
   $: if (isGuest && paymentType === "card") paymentType = "cash";
 
+  const normalizePhone = (value: string) => {
+    const startsWithPlus = value.trim().startsWith("+");
+    const digits = value.replace(/\D/g, "").slice(0, 15);
+    return `${startsWithPlus ? "+" : ""}${digits}`;
+  };
+
+  const handlePhoneInput = (event: Event) => {
+    phone = normalizePhone((event.currentTarget as HTMLInputElement).value);
+  };
+
+  const validateCheckout = () => {
+    const normalizedPhone = normalizePhone(phone);
+    phone = normalizedPhone;
+
+    if (!normalizedPhone || normalizedPhone.replace(/\D/g, "").length < 7) {
+      return "Enter a valid phone number.";
+    }
+
+    if (deliveryType === "delivery") {
+      const cleanAddress = address.trim();
+
+      if (cleanAddress.length < 5 || !/[A-Za-zА-Яа-яІіЇїЄєҐґ]/.test(cleanAddress)) {
+        return "Enter a valid delivery address.";
+      }
+
+      if (!/\d/.test(cleanAddress)) {
+        return "Add a building or apartment number to the address.";
+      }
+    }
+
+    return "";
+  };
+
   const submit = async () => {
     error = "";
     try {
       if (!$cart || $cart.items.length === 0) {
         error = "Your basket is empty.";
+        return;
+      }
+
+      const validationError = validateCheckout();
+      if (validationError) {
+        error = validationError;
         return;
       }
 
@@ -99,11 +138,18 @@
       </label>
       <label>
         <span class="label">Address</span>
-        <input class="ink-input" bind:value={address} />
+        <input class="ink-input" bind:value={address} autocomplete="street-address" placeholder="Street and building" />
       </label>
       <label>
         <span class="label">Phone</span>
-        <input class="ink-input" bind:value={phone} />
+        <input
+          class="ink-input"
+          bind:value={phone}
+          autocomplete="tel"
+          inputmode="tel"
+          placeholder="+380..."
+          on:input={handlePhoneInput}
+        />
       </label>
       {#if error}
         <p class="form-error">{error}</p>

@@ -66,6 +66,11 @@ const productDetailsResponseSchema = productResponseSchema.extend({
   ingredients: z.array(ingredientResponseSchema),
 });
 
+const productListItemResponseSchema = productResponseSchema.extend({
+  categories: z.array(categoryResponseSchema),
+  tags: z.array(tagResponseSchema),
+});
+
 const createCategoryBodySchema = z.object({
   name: z.string().trim().min(2).max(120),
   cover: z.string().url().nullable().optional(),
@@ -117,7 +122,7 @@ const tagListSchema = z.object({
 });
 
 const productListSchema = z.object({
-  products: z.array(productResponseSchema),
+  products: z.array(productListItemResponseSchema),
 });
 
 const ingredientListSchema = z.object({
@@ -274,6 +279,21 @@ const getProductDetails = async (productSlug: string) => {
     ingredients: product.ingredients.map(toIngredientResponse),
   };
 };
+
+const toProductListItemResponse = (
+  product: typeof products.$inferSelect & {
+    productCategories: Array<{
+      category: typeof categories.$inferSelect;
+    }>;
+    productTags: Array<{
+      tag: typeof tags.$inferSelect;
+    }>;
+  },
+) => ({
+  ...toProductResponse(product),
+  categories: product.productCategories.map((entry) => toCategoryResponse(entry.category)),
+  tags: product.productTags.map((entry) => toTagResponse(entry.tag)),
+});
 
 const createRouteConfig = {
   401: {
@@ -944,11 +964,24 @@ export const catalogRoute = createOpenApiApp<AppBindings>()
     return c.json(successResponse, 200);
   })
   .openapi(listProductsRoute, async (c) => {
-    const allProducts = await db.query.products.findMany();
+    const allProducts = await db.query.products.findMany({
+      with: {
+        productCategories: {
+          with: {
+            category: true,
+          },
+        },
+        productTags: {
+          with: {
+            tag: true,
+          },
+        },
+      },
+    });
 
     return c.json(
       {
-        products: allProducts.map(toProductResponse),
+        products: allProducts.map(toProductListItemResponse),
       },
       200,
     );

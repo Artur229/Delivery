@@ -64,6 +64,11 @@
   const toggleTag = (slug: string) => {
     activeTag = activeTag === slug ? "all" : slug;
   };
+
+  const clearFilters = () => {
+    activeCategory = "all";
+    activeTag = "all";
+  };
 </script>
 
 <main class="page-shell catalog">
@@ -113,11 +118,22 @@
     <p class="form-error">{error}</p>
   {:else}
     <p class="result-count">{sortedProducts.length} pieces in this edit</p>
-    <section class="product-grid">
-      {#each sortedProducts as product}
-        <ProductCard {product} onAdd={addProductToCart} />
-      {/each}
-    </section>
+    {#if sortedProducts.length === 0}
+      <section class="empty-state paper">
+        <span class="label">No matches</span>
+        <h2 class="headline">Nothing in this exact edit yet.</h2>
+        <p class="body-lg">
+          This category and tag combination has no dishes right now. Try another tag or reset the filters.
+        </p>
+        <button class="primary-button" on:click={clearFilters}>Reset filters</button>
+      </section>
+    {:else}
+      <section class="product-grid">
+        {#each sortedProducts as product}
+          <ProductCard {product} onAdd={addProductToCart} />
+        {/each}
+      </section>
+    {/if}
   {/if}
 </main>
 
@@ -227,6 +243,18 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 36px 24px;
+  }
+
+  .empty-state {
+    display: grid;
+    max-width: 760px;
+    gap: 18px;
+    padding: clamp(28px, 5vw, 54px);
+  }
+
+  .empty-state h2,
+  .empty-state p {
+    margin: 0;
   }
 
   @media (max-width: 900px) {
