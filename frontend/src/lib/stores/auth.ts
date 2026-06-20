@@ -51,5 +51,9 @@ export const authStore = {
   logout: () => {
     clearAuthTokens();
     user.set(null);
+
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
   },
 };
