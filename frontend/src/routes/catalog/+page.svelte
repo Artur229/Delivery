@@ -9,15 +9,19 @@
   let categories: Category[] = [];
   let tags: Tag[] = [];
   let activeCategory = "all";
+  let activeTag = "all";
   let sortKey = "featured";
   let error = "";
 
-  $: filteredProducts =
-    activeCategory === "all"
-      ? products
-      : products.filter((product) =>
-          product.categories?.some((category) => category.slug === activeCategory),
-        );
+  $: filteredProducts = products.filter((product) => {
+    const categoryMatches =
+      activeCategory === "all" ||
+      product.categories?.some((category) => category.slug === activeCategory);
+    const tagMatches =
+      activeTag === "all" || product.tags?.some((tag) => tag.slug === activeTag);
+
+    return categoryMatches && tagMatches;
+  });
   $: sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortKey === "price-low") {
       return Number(a.price) - Number(b.price);
@@ -48,10 +52,18 @@
       if (categoryFromUrl) {
         activeCategory = categoryFromUrl;
       }
+      const tagFromUrl = new URLSearchParams(window.location.search).get("tag");
+      if (tagFromUrl) {
+        activeTag = tagFromUrl;
+      }
     } catch (err) {
       error = err instanceof Error ? err.message : "Failed to load catalog";
     }
   });
+
+  const toggleTag = (slug: string) => {
+    activeTag = activeTag === slug ? "all" : slug;
+  };
 </script>
 
 <main class="page-shell catalog">
@@ -77,7 +89,13 @@
   <div class="catalog-tools">
     <div class="tag-row">
       {#each tags as tag}
-        <span class="chip">{tag.name}</span>
+        <button
+          class:active={activeTag === tag.slug}
+          class="chip tag-chip"
+          on:click={() => toggleTag(tag.slug)}
+        >
+          {tag.name}
+        </button>
       {/each}
     </div>
     <label class="sort-control">
@@ -158,6 +176,24 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+  }
+
+  .tag-chip {
+    border: 0;
+    cursor: pointer;
+    transition:
+      background 0.18s ease,
+      color 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .tag-chip:hover {
+    transform: translateY(-1px);
+  }
+
+  .tag-chip.active {
+    background: var(--primary);
+    color: var(--secondary-soft);
   }
 
   .sort-control {
