@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { and, eq, ne } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { inventory } from "../db/schema.js";
@@ -219,7 +220,7 @@ const deleteInventoryItemRoute = createRoute({
   },
 });
 
-export const inventoryRoute = new OpenAPIHono<AppBindings>()
+export const inventoryRoute = createOpenApiApp<AppBindings>()
   .openapi(listInventoryRoute, async (c) => {
     const inventoryItems = await db.query.inventory.findMany();
 

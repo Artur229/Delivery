@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { and, eq, gt } from "drizzle-orm";
 import { roles } from "../constants/roles.js";
 import { db } from "../db/client.js";
@@ -210,7 +211,7 @@ const logoutRoute = createRoute({
   },
 });
 
-export const authRoute = new OpenAPIHono()
+export const authRoute = createOpenApiApp()
   .openapi(registerRoute, async (c) => {
     const body = c.req.valid("json");
 

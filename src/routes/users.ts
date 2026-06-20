@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { and, eq, ne } from "drizzle-orm";
 import { roles } from "../constants/roles.js";
 import { db } from "../db/client.js";
@@ -208,7 +209,7 @@ const updateUserReviewBlockRoute = createRoute({
   },
 });
 
-export const usersRoute = new OpenAPIHono<AppBindings>()
+export const usersRoute = createOpenApiApp<AppBindings>()
   .openapi(getMeRoute, async (c) => {
     const currentUser = c.get("currentUser");
 

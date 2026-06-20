@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 
 const healthResponseSchema = z.object({
   status: z.literal("ok"),
@@ -22,7 +23,7 @@ const route = createRoute({
   },
 });
 
-export const healthRoute = new OpenAPIHono().openapi(route, (c) => {
+export const healthRoute = createOpenApiApp().openapi(route, (c) => {
   return c.json({
     status: "ok",
     service: "food-delivery-backend",

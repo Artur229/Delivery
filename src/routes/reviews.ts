@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { and, eq } from "drizzle-orm";
 import { roles, type Role } from "../constants/roles.js";
 import { db } from "../db/client.js";
@@ -259,7 +260,7 @@ const deleteReviewRoute = createRoute({
   },
 });
 
-export const reviewsRoute = new OpenAPIHono<AppBindings>()
+export const reviewsRoute = createOpenApiApp<AppBindings>()
   .openapi(listProductReviewsRoute, async (c) => {
     const { slug } = c.req.valid("param");
     const product = await getProductBySlug(slug);

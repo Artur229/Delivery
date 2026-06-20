@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { cartItems, carts, products } from "../db/schema.js";
@@ -285,7 +286,7 @@ const clearCartRoute = createRoute({
   },
 });
 
-export const cartRoute = new OpenAPIHono<AppBindings>()
+export const cartRoute = createOpenApiApp<AppBindings>()
   .openapi(getCartRoute, async (c) => {
     const currentUser = c.get("currentUser");
     const cart = await getCartWithItems(currentUser.id);

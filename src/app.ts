@@ -1,5 +1,5 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
+import { createOpenApiApp } from "./lib/openapi.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
 import { authRoute } from "./routes/auth.js";
@@ -13,7 +13,7 @@ import { paymentsRoute } from "./routes/payments.js";
 import { reviewsRoute } from "./routes/reviews.js";
 import { usersRoute } from "./routes/users.js";
 
-export const app = new OpenAPIHono();
+export const app = createOpenApiApp();
 
 app.use("*", requestLogger);
 app.onError(errorHandler);

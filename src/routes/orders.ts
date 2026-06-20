@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { desc, eq } from "drizzle-orm";
 import {
   deliveryTypes,
@@ -341,7 +342,7 @@ const updateOrderStatusRoute = createRoute({
   },
 });
 
-export const ordersRoute = new OpenAPIHono<AppBindings>()
+export const ordersRoute = createOpenApiApp<AppBindings>()
   .openapi(createOrderRoute, async (c) => {
     const currentUser = c.get("currentUser");
     const body = c.req.valid("json");

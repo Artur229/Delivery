@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { env } from "../config/env.js";
@@ -194,7 +195,7 @@ const stripeWebhookRoute = createRoute({
   },
 });
 
-export const paymentsRoute = new OpenAPIHono<AppBindings>()
+export const paymentsRoute = createOpenApiApp<AppBindings>()
   .openapi(createCheckoutRoute, async (c) => {
     const currentUser = c.get("currentUser");
     const { orderId } = c.req.valid("param");

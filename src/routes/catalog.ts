@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "../db/client.js";
 import {
@@ -748,7 +749,7 @@ const deleteProductIngredientRoute = createRoute({
   },
 });
 
-export const catalogRoute = new OpenAPIHono<AppBindings>()
+export const catalogRoute = createOpenApiApp<AppBindings>()
   .openapi(listCategoriesRoute, async (c) => {
     const allCategories = await db.query.categories.findMany();
 

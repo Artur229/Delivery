@@ -1,4 +1,5 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createOpenApiApp } from "../lib/openapi.js";
 import { asc, desc, eq } from "drizzle-orm";
 import { roles, type Role } from "../constants/roles.js";
 import { db } from "../db/client.js";
@@ -244,7 +245,7 @@ const createMessageRoute = createRoute({
   },
 });
 
-export const chatRoute = new OpenAPIHono<AppBindings>()
+export const chatRoute = createOpenApiApp<AppBindings>()
   .openapi(listChatsRoute, async (c) => {
     const currentUser = c.get("currentUser");
 
