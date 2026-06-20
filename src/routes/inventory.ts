@@ -100,6 +100,7 @@ const listInventoryRoute = createRoute({
   method: "get",
   path: "/inventory",
   tags: ["Inventory"],
+  security: [{ BearerAuth: [] }],
   middleware: canReadInventory,
   responses: {
     200: {
@@ -119,6 +120,7 @@ const getInventoryItemRoute = createRoute({
   method: "get",
   path: "/inventory/{slug}",
   tags: ["Inventory"],
+  security: [{ BearerAuth: [] }],
   middleware: canReadInventory,
   request: {
     params: slugParamSchema,
@@ -140,6 +142,7 @@ const createInventoryItemRoute = createRoute({
   method: "post",
   path: "/inventory",
   tags: ["Inventory"],
+  security: [{ BearerAuth: [] }],
   middleware: canWriteInventory,
   request: {
     body: {
@@ -168,6 +171,7 @@ const updateInventoryItemRoute = createRoute({
   method: "patch",
   path: "/inventory/{slug}",
   tags: ["Inventory"],
+  security: [{ BearerAuth: [] }],
   middleware: canWriteInventory,
   request: {
     params: slugParamSchema,
@@ -197,6 +201,7 @@ const deleteInventoryItemRoute = createRoute({
   method: "delete",
   path: "/inventory/{slug}",
   tags: ["Inventory"],
+  security: [{ BearerAuth: [] }],
   middleware: canWriteInventory,
   request: {
     params: slugParamSchema,

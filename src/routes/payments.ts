@@ -159,6 +159,7 @@ const createCheckoutRoute = createRoute({
   method: "post",
   path: "/payments/checkout/{orderId}",
   tags: ["Payments"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: orderIdParamSchema,

@@ -225,6 +225,7 @@ const createOrderRoute = createRoute({
   method: "post",
   path: "/orders",
   tags: ["Orders"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     body: {
@@ -253,6 +254,7 @@ const listMyOrdersRoute = createRoute({
   method: "get",
   path: "/orders",
   tags: ["Orders"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   responses: {
     200: {
@@ -271,6 +273,7 @@ const listAllOrdersRoute = createRoute({
   method: "get",
   path: "/admin/orders",
   tags: ["Orders"],
+  security: [{ BearerAuth: [] }],
   middleware: staffOnly,
   responses: {
     200: {
@@ -290,6 +293,7 @@ const getOrderRoute = createRoute({
   method: "get",
   path: "/orders/{orderId}",
   tags: ["Orders"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: orderIdParamSchema,
@@ -311,6 +315,7 @@ const updateOrderStatusRoute = createRoute({
   method: "patch",
   path: "/orders/{orderId}/status",
   tags: ["Orders"],
+  security: [{ BearerAuth: [] }],
   middleware: staffOnly,
   request: {
     params: orderIdParamSchema,

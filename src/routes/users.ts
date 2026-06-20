@@ -42,6 +42,7 @@ const getMeRoute = createRoute({
   method: "get",
   path: "/me",
   tags: ["Users"],
+  security: [{ BearerAuth: [] }],
   middleware: [authRequired] as const,
   responses: {
     200: {
@@ -67,6 +68,7 @@ const updateMeRoute = createRoute({
   method: "patch",
   path: "/me",
   tags: ["Users"],
+  security: [{ BearerAuth: [] }],
   middleware: [authRequired] as const,
   request: {
     body: {
@@ -110,6 +112,7 @@ const listUsersRoute = createRoute({
   method: "get",
   path: "/users",
   tags: ["Users"],
+  security: [{ BearerAuth: [] }],
   middleware: [authRequired, allowRoles(["owner", "admin"])] as const,
   responses: {
     200: {
@@ -135,6 +138,7 @@ const updateUserRoleRoute = createRoute({
   method: "patch",
   path: "/users/{slug}/role",
   tags: ["Users"],
+  security: [{ BearerAuth: [] }],
   middleware: [authRequired, allowRoles(["owner", "admin"])] as const,
   request: {
     params: slugParamSchema,
@@ -171,6 +175,7 @@ const updateUserReviewBlockRoute = createRoute({
   method: "patch",
   path: "/users/{slug}/review-block",
   tags: ["Users"],
+  security: [{ BearerAuth: [] }],
   middleware: [authRequired, allowRoles(["owner", "admin"])] as const,
   request: {
     params: slugParamSchema,

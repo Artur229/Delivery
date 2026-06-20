@@ -349,6 +349,7 @@ const createCategoryRoute = createRoute({
   method: "post",
   path: "/categories",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     body: {
@@ -377,6 +378,7 @@ const updateCategoryRoute = createRoute({
   method: "patch",
   path: "/categories/{slug}",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: slugParamSchema,
@@ -406,6 +408,7 @@ const deleteCategoryRoute = createRoute({
   method: "delete",
   path: "/categories/{slug}",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: slugParamSchema,
@@ -443,6 +446,7 @@ const createTagRoute = createRoute({
   method: "post",
   path: "/tags",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     body: {
@@ -471,6 +475,7 @@ const updateTagRoute = createRoute({
   method: "patch",
   path: "/tags/{slug}",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: slugParamSchema,
@@ -500,6 +505,7 @@ const deleteTagRoute = createRoute({
   method: "delete",
   path: "/tags/{slug}",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: slugParamSchema,
@@ -557,6 +563,7 @@ const createProductRoute = createRoute({
   method: "post",
   path: "/products",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     body: {
@@ -585,6 +592,7 @@ const updateProductRoute = createRoute({
   method: "patch",
   path: "/products/{slug}",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: slugParamSchema,
@@ -614,6 +622,7 @@ const deleteProductRoute = createRoute({
   method: "delete",
   path: "/products/{slug}",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: slugParamSchema,
@@ -655,6 +664,7 @@ const createProductIngredientRoute = createRoute({
   method: "post",
   path: "/products/{slug}/ingredients",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: slugParamSchema,
@@ -684,6 +694,7 @@ const updateProductIngredientRoute = createRoute({
   method: "patch",
   path: "/products/{slug}/ingredients/{ingredientId}",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: z.object({
@@ -716,6 +727,7 @@ const deleteProductIngredientRoute = createRoute({
   method: "delete",
   path: "/products/{slug}/ingredients/{ingredientId}",
   tags: ["Catalog"],
+  security: [{ BearerAuth: [] }],
   middleware: adminOnly,
   request: {
     params: z.object({

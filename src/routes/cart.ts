@@ -170,6 +170,7 @@ const getCartRoute = createRoute({
   method: "get",
   path: "/cart",
   tags: ["Cart"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   responses: {
     200: {
@@ -188,6 +189,7 @@ const addCartItemRoute = createRoute({
   method: "post",
   path: "/cart/items",
   tags: ["Cart"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     body: {
@@ -216,6 +218,7 @@ const updateCartItemRoute = createRoute({
   method: "patch",
   path: "/cart/items/{itemId}",
   tags: ["Cart"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: itemIdParamSchema,
@@ -245,6 +248,7 @@ const deleteCartItemRoute = createRoute({
   method: "delete",
   path: "/cart/items/{itemId}",
   tags: ["Cart"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: itemIdParamSchema,
@@ -266,6 +270,7 @@ const clearCartRoute = createRoute({
   method: "delete",
   path: "/cart",
   tags: ["Cart"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   responses: {
     200: {

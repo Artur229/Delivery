@@ -158,6 +158,7 @@ const listChatsRoute = createRoute({
   method: "get",
   path: "/chats",
   tags: ["Chat"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   responses: {
     200: {
@@ -176,6 +177,7 @@ const getOrCreateMyChatRoute = createRoute({
   method: "post",
   path: "/chats",
   tags: ["Chat"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   responses: {
     200: {
@@ -194,6 +196,7 @@ const listMessagesRoute = createRoute({
   method: "get",
   path: "/chats/{chatId}/messages",
   tags: ["Chat"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: chatIdParamSchema,
@@ -215,6 +218,7 @@ const createMessageRoute = createRoute({
   method: "post",
   path: "/chats/{chatId}/messages",
   tags: ["Chat"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: chatIdParamSchema,

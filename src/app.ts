@@ -38,6 +38,12 @@ app.route("/", paymentsRoute);
 app.route("/", reviewsRoute);
 app.route("/", chatRoute);
 
+app.openAPIRegistry.registerComponent("securitySchemes", "BearerAuth", {
+  type: "http",
+  scheme: "bearer",
+  bearerFormat: "JWT",
+});
+
 app.doc("/api/openapi.json", {
   openapi: "3.0.0",
   info: {

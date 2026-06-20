@@ -181,6 +181,7 @@ const createReviewRoute = createRoute({
   method: "post",
   path: "/products/{slug}/reviews",
   tags: ["Reviews"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: productSlugParamSchema,
@@ -210,6 +211,7 @@ const updateReviewRoute = createRoute({
   method: "patch",
   path: "/reviews/{reviewId}",
   tags: ["Reviews"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: reviewIdParamSchema,
@@ -239,6 +241,7 @@ const deleteReviewRoute = createRoute({
   method: "delete",
   path: "/reviews/{reviewId}",
   tags: ["Reviews"],
+  security: [{ BearerAuth: [] }],
   middleware: authOnly,
   request: {
     params: reviewIdParamSchema,
