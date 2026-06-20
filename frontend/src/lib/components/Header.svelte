@@ -17,6 +17,8 @@
     $user?.role === "admin" ||
     $user?.role === "chef" ||
     $user?.role === "courier";
+  $: dashboardHref = $user?.role === "courier" ? "/courier" : "/admin";
+  $: dashboardLabel = $user?.role === "courier" ? "Courier" : "Dashboard";
 
   $: cartCount = $cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
   $: if (cartCount > lastCartCount) {
@@ -37,7 +39,7 @@
         <a href={link.href}>{link.label}</a>
       {/each}
       {#if canSeeDashboard}
-        <a href="/admin">Dashboard</a>
+        <a href={dashboardHref}>{dashboardLabel}</a>
       {/if}
     </nav>
     <div class="actions">

@@ -15,6 +15,18 @@
       await authStore.login(email, password);
       await cartStore.load().catch(() => undefined);
       connectSocket();
+      const currentUser = await authStore.loadMe();
+
+      if (currentUser?.role === "courier") {
+        await goto("/courier");
+        return;
+      }
+
+      if (currentUser?.role === "owner" || currentUser?.role === "admin" || currentUser?.role === "chef") {
+        await goto("/admin");
+        return;
+      }
+
       await goto("/catalog");
     } catch (err) {
       error = err instanceof Error ? err.message : "Login failed";

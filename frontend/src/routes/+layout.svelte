@@ -19,12 +19,13 @@
     }
   });
 
-  $: isDashboard = $page.url.pathname.startsWith("/admin");
+  $: isWorkspace =
+    $page.url.pathname.startsWith("/admin") || $page.url.pathname.startsWith("/courier");
 </script>
 
 <Header />
 <slot />
 <ToastHost />
-{#if !isDashboard}
+{#if !isWorkspace}
   <Footer />
 {/if}
