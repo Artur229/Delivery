@@ -9,7 +9,7 @@ import {
   tags,
   users,
 } from "./schema.js";
-import { db } from "./client.js";
+import { closeDatabase, db } from "./client.js";
 import { hashPassword } from "../lib/password.js";
 import { createSlug } from "../lib/slug.js";
 import type { Role } from "../constants/roles.js";
@@ -357,4 +357,8 @@ const main = async () => {
   console.log(`Seed users password: ${defaultPassword}`);
 };
 
-await main();
+try {
+  await main();
+} finally {
+  await closeDatabase();
+}
