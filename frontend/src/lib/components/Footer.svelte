@@ -16,7 +16,7 @@
     </div>
     <div>
       <span class="label">Kitchen</span>
-      <p>Built with SvelteKit, Hono, PostgreSQL and a little warm ink.</p>
+      <p>Seasonal plates, thoughtful service, and delivery made for everyday rituals.</p>
     </div>
   </div>
 </footer>

@@ -71,7 +71,7 @@
     <div>
       <span class="label">Artisanal selection</span>
       <h1 class="display">The collection</h1>
-      <p class="body-lg">Filter the seeded Supabase menu by category and send favorites to your live cart.</p>
+      <p class="body-lg">Choose by craving, mood, or price, then send your favorites straight to the basket.</p>
     </div>
     <div class="filters">
       <button class:active={activeCategory === "all"} on:click={() => (activeCategory = "all")}>All</button>

@@ -7,8 +7,8 @@
     <span class="label">Admin</span>
     <h1 class="display">Back of house</h1>
     <p class="body-lg">
-      The frontend shell is ready for role guarded admin CRUD screens. The backend routes
-      already exist for users, catalog, inventory, orders, reviews and chat.
+      Manage the daily rhythm of the kitchen, from menu updates to orders, reviews,
+      stock, and team access.
     </p>
   </header>
   <section class="admin-grid">
@@ -16,7 +16,7 @@
       <article class="paper">
         <span class="label">{section}</span>
         <h2 class="subhead">{section}</h2>
-        <p>CRUD surface planned in the same editorial system.</p>
+        <p>Tools for keeping this area organized and up to date.</p>
       </article>
     {/each}
   </section>

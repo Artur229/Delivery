@@ -30,8 +30,8 @@
       <span class="label">Artisanal provisions</span>
       <h1 class="display">Food with a maker's hand.</h1>
       <p class="body-lg">
-        A warm, editorial delivery experience connected to your live Hono backend,
-        seeded menu, realtime cart and order updates.
+        Fresh favorites, thoughtful recipes, and simple ordering for slow evenings,
+        quick lunches, and everything in between.
       </p>
       <div class="hero-actions">
         <a class="primary-button" href="/catalog">

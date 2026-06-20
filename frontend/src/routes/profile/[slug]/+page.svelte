@@ -42,10 +42,10 @@
       <section class="journal">
         <article class="paper">
           <span class="label">Saved taste</span>
-          <h3 class="headline">A curated account surface</h3>
+          <h3 class="headline">Your saved details</h3>
           <p class="body-lg">
-            This page is connected to the backend user state and keeps the Stitch journal
-            layout as a refined profile surface.
+            Keep your delivery details close, review your account information, and make
+            future orders feel a little easier.
           </p>
         </article>
       </section>

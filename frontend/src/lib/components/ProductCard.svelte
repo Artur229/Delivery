@@ -32,7 +32,7 @@
     <a href={`/catalog/${product.slug}`}>
       <h2 class={featured ? "headline" : "subhead"}>{product.name}</h2>
     </a>
-    <p>{product.description ?? "A seeded kitchen favorite from our editorial menu."}</p>
+    <p>{product.description ?? "A kitchen favorite prepared for easy ordering."}</p>
     <div class="meta">
       <strong>₴{product.price}</strong>
       <button

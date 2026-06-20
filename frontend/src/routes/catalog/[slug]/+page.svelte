@@ -76,8 +76,8 @@
         <span class="label">The maker's hand</span>
         <h2 class="headline">Composition</h2>
         <p class="body-lg">
-          The backend owns product logic and pricing; the frontend turns it into a warm,
-          tactile ordering surface.
+          A closer look at what goes into the plate, from the main ingredients to the
+          small details that shape its flavor.
         </p>
       </div>
       <div class="paper ingredient-list">
