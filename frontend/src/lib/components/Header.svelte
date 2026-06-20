@@ -3,6 +3,9 @@
   import { cart } from "$lib/stores/cart";
   import { authStore, user } from "$lib/stores/auth";
 
+  let lastCartCount = 0;
+  let bumpCart = false;
+
   const links = [
     { href: "/", label: "Discover" },
     { href: "/catalog", label: "Catalog" },
@@ -10,6 +13,14 @@
   ];
 
   $: cartCount = $cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+  $: if (cartCount > lastCartCount) {
+    bumpCart = false;
+    setTimeout(() => {
+      bumpCart = true;
+      setTimeout(() => (bumpCart = false), 520);
+    });
+  }
+  $: lastCartCount = cartCount;
 </script>
 
 <header class="site-header">
@@ -21,7 +32,7 @@
       {/each}
     </nav>
     <div class="actions">
-      <a class="icon-button cart-link" href="/cart" aria-label="Cart">
+      <a class:bump={bumpCart} class="icon-button cart-link" href="/cart" aria-label="Cart">
         <ShoppingBag size={20} />
         {#if cartCount > 0}
           <span>{cartCount}</span>
@@ -88,6 +99,10 @@
     position: relative;
   }
 
+  .cart-link.bump {
+    animation: bag-bump 0.52s cubic-bezier(0.17, 0.89, 0.32, 1.28);
+  }
+
   .cart-link span {
     position: absolute;
     top: -5px;
@@ -101,6 +116,20 @@
     color: var(--secondary-soft);
     font-family: "Space Mono", monospace;
     font-size: 0.7rem;
+  }
+
+  @keyframes bag-bump {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+
+    45% {
+      transform: translateY(-5px) scale(1.09) rotate(-5deg);
+    }
+
+    100% {
+      transform: translateY(0) scale(1);
+    }
   }
 
   @media (max-width: 760px) {

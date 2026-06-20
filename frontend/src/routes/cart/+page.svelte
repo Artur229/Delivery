@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { Minus, Plus, Trash2 } from "@lucide/svelte";
+  import { getProductImage } from "$lib/media/products";
   import { cart, cartStore } from "$lib/stores/cart";
 
   const updateQuantity = (itemId: string, quantity: number) => {
@@ -26,7 +27,7 @@
       <div class="items">
         {#each $cart.items as item}
           <article class="paper cart-item">
-            <img src={item.product?.cover ?? "/food-placeholder.svg"} alt={item.product?.name ?? "Cart item"} />
+            <img src={getProductImage(item.product)} alt={item.product?.name ?? "Cart item"} />
             <div>
               <h2 class="subhead">{item.product?.name}</h2>
               <p>₴{item.product?.price}</p>

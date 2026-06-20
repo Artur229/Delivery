@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import Footer from "$lib/components/Footer.svelte";
   import Header from "$lib/components/Header.svelte";
+  import ToastHost from "$lib/components/ToastHost.svelte";
   import { authStore, user } from "$lib/stores/auth";
   import { cartStore } from "$lib/stores/cart";
   import { connectSocket } from "$lib/stores/socket";
@@ -19,4 +20,5 @@
 
 <Header />
 <slot />
+<ToastHost />
 <Footer />

@@ -2,13 +2,14 @@
   import { onMount } from "svelte";
   import ProductCard from "$lib/components/ProductCard.svelte";
   import { api } from "$lib/api";
-  import { cartStore } from "$lib/stores/cart";
+  import { addProductToCart } from "$lib/cart-actions";
   import type { Category, Product, Tag } from "$lib/types";
 
   let products: Product[] = [];
   let categories: Category[] = [];
   let tags: Tag[] = [];
   let activeCategory = "all";
+  let sortKey = "featured";
   let error = "";
 
   $: filteredProducts =
@@ -17,6 +18,21 @@
       : products.filter((product) =>
           product.categories?.some((category) => category.slug === activeCategory),
         );
+  $: sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortKey === "price-low") {
+      return Number(a.price) - Number(b.price);
+    }
+
+    if (sortKey === "price-high") {
+      return Number(b.price) - Number(a.price);
+    }
+
+    if (sortKey === "name") {
+      return a.name.localeCompare(b.name);
+    }
+
+    return 0;
+  });
 
   onMount(async () => {
     try {
@@ -28,6 +44,10 @@
       products = productResponse.products;
       categories = categoryResponse.categories;
       tags = tagResponse.tags;
+      const categoryFromUrl = new URLSearchParams(window.location.search).get("category");
+      if (categoryFromUrl) {
+        activeCategory = categoryFromUrl;
+      }
     } catch (err) {
       error = err instanceof Error ? err.message : "Failed to load catalog";
     }
@@ -54,18 +74,30 @@
     </div>
   </header>
 
-  <div class="tag-row">
-    {#each tags as tag}
-      <span class="chip">{tag.name}</span>
-    {/each}
+  <div class="catalog-tools">
+    <div class="tag-row">
+      {#each tags as tag}
+        <span class="chip">{tag.name}</span>
+      {/each}
+    </div>
+    <label class="sort-control">
+      <span class="label">Sort</span>
+      <select bind:value={sortKey}>
+        <option value="featured">Featured first</option>
+        <option value="price-low">Price: low to high</option>
+        <option value="price-high">Price: high to low</option>
+        <option value="name">Name A-Z</option>
+      </select>
+    </label>
   </div>
 
   {#if error}
     <p class="form-error">{error}</p>
   {:else}
+    <p class="result-count">{sortedProducts.length} pieces in this edit</p>
     <section class="product-grid">
-      {#each filteredProducts as product}
-        <ProductCard {product} onAdd={(slug) => cartStore.add(slug)} />
+      {#each sortedProducts as product}
+        <ProductCard {product} onAdd={addProductToCart} />
       {/each}
     </section>
   {/if}
@@ -114,11 +146,45 @@
     color: white;
   }
 
+  .catalog-tools {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 18px;
+    margin: 24px 0 34px;
+  }
+
   .tag-row {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin: 24px 0 48px;
+  }
+
+  .sort-control {
+    display: grid;
+    min-width: 220px;
+    gap: 8px;
+  }
+
+  .sort-control select {
+    border: 1px solid rgba(124, 87, 48, 0.28);
+    border-radius: 14px;
+    background: var(--surface-container);
+    color: var(--primary);
+    cursor: pointer;
+    font-family: "Space Mono", monospace;
+    font-size: 0.78rem;
+    padding: 0.78rem 0.9rem;
+    text-transform: uppercase;
+  }
+
+  .result-count {
+    color: var(--secondary);
+    font-family: "Space Mono", monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    margin: 0 0 22px;
+    text-transform: uppercase;
   }
 
   .product-grid {
@@ -135,6 +201,14 @@
 
     .filters {
       justify-content: flex-start;
+    }
+
+    .catalog-tools {
+      display: grid;
+    }
+
+    .sort-control {
+      min-width: 0;
     }
   }
 </style>

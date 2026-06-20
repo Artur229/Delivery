@@ -1,15 +1,31 @@
 <script lang="ts">
   import { Plus } from "@lucide/svelte";
+  import { getProductImage } from "$lib/media/products";
   import type { Product } from "$lib/types";
 
   export let product: Product;
   export let featured = false;
-  export let onAdd: ((slug: string) => void) | undefined = undefined;
+  export let onAdd: ((product: Product) => Promise<void> | void) | undefined = undefined;
+
+  let adding = false;
+
+  const handleAdd = async () => {
+    if (!onAdd || adding) {
+      return;
+    }
+
+    adding = true;
+    try {
+      await onAdd(product);
+    } finally {
+      adding = false;
+    }
+  };
 </script>
 
 <article class:featured class="product-card">
   <a class="image rough-image" href={`/catalog/${product.slug}`}>
-    <img src={product.cover ?? "/food-placeholder.svg"} alt={product.name} />
+    <img src={getProductImage(product)} alt={product.name} />
   </a>
   <div class="copy organic-border">
     <span class="label">{product.tags?.[0]?.name ?? "Artisanal"}</span>
@@ -19,7 +35,13 @@
     <p>{product.description ?? "A seeded kitchen favorite from our editorial menu."}</p>
     <div class="meta">
       <strong>₴{product.price}</strong>
-      <button class="icon-button" aria-label={`Add ${product.name}`} on:click={() => onAdd?.(product.slug)}>
+      <button
+        class:adding
+        class="icon-button"
+        aria-label={`Add ${product.name}`}
+        disabled={adding}
+        on:click={handleAdd}
+      >
         <Plus size={18} />
       </button>
     </div>
@@ -80,6 +102,26 @@
     color: var(--primary);
     font-family: "Playfair Display", serif;
     font-size: 1.7rem;
+  }
+
+  button.adding {
+    background: var(--primary);
+    color: var(--secondary-soft);
+    animation: cart-pop 0.58s ease;
+  }
+
+  @keyframes cart-pop {
+    0% {
+      transform: scale(1);
+    }
+
+    42% {
+      transform: scale(1.14) rotate(-8deg);
+    }
+
+    100% {
+      transform: scale(1);
+    }
   }
 
   .featured {

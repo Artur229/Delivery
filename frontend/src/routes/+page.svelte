@@ -3,7 +3,7 @@
   import { ArrowRight } from "@lucide/svelte";
   import ProductCard from "$lib/components/ProductCard.svelte";
   import { api } from "$lib/api";
-  import { cartStore } from "$lib/stores/cart";
+  import { addProductToCart } from "$lib/cart-actions";
   import type { Category, Product } from "$lib/types";
 
   let products: Product[] = [];
@@ -62,11 +62,11 @@
     {#if error}
       <p class="form-error">{error}</p>
     {:else if products[0]}
-      <ProductCard product={products[0]} featured onAdd={(slug) => cartStore.add(slug)} />
+      <ProductCard product={products[0]} featured onAdd={addProductToCart} />
     {/if}
     <div class="product-grid">
       {#each products.slice(1, 7) as product}
-        <ProductCard {product} onAdd={(slug) => cartStore.add(slug)} />
+        <ProductCard {product} onAdd={addProductToCart} />
       {/each}
     </div>
   </section>

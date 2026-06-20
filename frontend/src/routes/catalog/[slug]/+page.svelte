@@ -3,7 +3,8 @@
   import { page } from "$app/stores";
   import { ArrowRight, Star } from "@lucide/svelte";
   import { api } from "$lib/api";
-  import { cartStore } from "$lib/stores/cart";
+  import { addProductToCart } from "$lib/cart-actions";
+  import { getProductImage } from "$lib/media/products";
   import type { Ingredient, Product, Review } from "$lib/types";
 
   let product: Product | null = null;
@@ -51,7 +52,7 @@
   {:else if product}
     <section class="hero page-shell">
       <div class="image rough-image">
-        <img src={product.cover ?? "/food-placeholder.svg"} alt={product.name} />
+        <img src={getProductImage(product)} alt={product.name} />
       </div>
       <div class="copy">
         <div class="chips">
@@ -63,7 +64,7 @@
         <p class="body-lg">{product.description}</p>
         <div class="buy-row">
           <strong>₴{product.price}</strong>
-          <button class="primary-button" on:click={() => cartStore.add(product!.slug)}>
+          <button class="primary-button" on:click={() => addProductToCart(product!)}>
             Add to cart <ArrowRight size={18} />
           </button>
         </div>
