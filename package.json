@@ -11,7 +11,10 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:check": "npm --prefix frontend run check",
+    "frontend:build": "npm --prefix frontend run build"
   },
   "keywords": [],
   "author": "",

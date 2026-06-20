@@ -1,0 +1,227 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --background: #faf9f6;
+  --surface: #faf9f6;
+  --surface-low: #f4f3f1;
+  --surface-container: #efeeeb;
+  --surface-high: #e9e8e5;
+  --surface-highest: #e3e2e0;
+  --primary: #181b19;
+  --primary-container: #2d302e;
+  --on-primary: #ffffff;
+  --secondary: #7c5730;
+  --secondary-soft: #fdcb9b;
+  --tertiary: #e8e2d9;
+  --text: #1a1c1a;
+  --muted: #444845;
+  --outline: #c4c7c4;
+  --error: #ba1a1a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(250, 249, 246, 0.94), rgba(250, 249, 246, 0.94)),
+    url("data:image/svg+xml,%3Csvg width='160' height='160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.11'/%3E%3C/svg%3E");
+  color: var(--text);
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.page-shell {
+  width: min(100% - 40px, 1320px);
+  margin: 0 auto;
+}
+
+.display {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+}
+
+.headline {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2rem, 4vw, 3.75rem);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.subhead {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(1.45rem, 2vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.body-lg {
+  color: var(--muted);
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+.label {
+  color: var(--secondary);
+  font-family: "Space Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.paper {
+  background: color-mix(in srgb, var(--surface-container) 88%, white);
+  border: 1px solid rgba(124, 87, 48, 0.18);
+}
+
+.organic-border {
+  border: 1px solid rgba(124, 87, 48, 0.28);
+  border-radius: 18px 12px 20px 10px;
+}
+
+.rough-image {
+  border-radius: 22px 10px 28px 12px;
+  overflow: hidden;
+}
+
+.ink-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1.5px solid rgba(124, 87, 48, 0.4);
+  background: transparent;
+  padding: 0.85rem 0;
+  color: var(--primary);
+  outline: none;
+}
+
+.ink-input:focus {
+  border-bottom-color: var(--secondary);
+  border-bottom-width: 2px;
+}
+
+.primary-button,
+.secondary-button,
+.icon-button {
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.primary-button:active,
+.secondary-button:active,
+.icon-button:active {
+  transform: scale(0.98);
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border: 0;
+  border-radius: 16px;
+  background: var(--primary);
+  color: var(--secondary-soft);
+  font-family: "Space Mono", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  padding: 1rem 1.4rem;
+  text-transform: uppercase;
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1.5px solid rgba(124, 87, 48, 0.45);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--secondary);
+  font-family: "Space Mono", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  padding: 0.9rem 1.2rem;
+  text-transform: uppercase;
+}
+
+.icon-button {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(124, 87, 48, 0.3);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--secondary);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--tertiary);
+  color: var(--muted);
+  font-family: "Space Mono", monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  padding: 0.45rem 0.75rem;
+  text-transform: uppercase;
+}
+
+.grid-editorial {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--secondary);
+}
+
+.form-error {
+  color: var(--error);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.map-box {
+  min-height: 320px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .page-shell {
+    width: min(100% - 32px, 1320px);
+  }
+
+  .grid-editorial {
+    display: block;
+  }
+}

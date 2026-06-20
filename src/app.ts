@@ -1,4 +1,5 @@
 import { apiReference } from "@scalar/hono-api-reference";
+import { cors } from "hono/cors";
 import { createOpenApiApp } from "./lib/openapi.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
@@ -15,6 +16,15 @@ import { usersRoute } from "./routes/users.js";
 
 export const app = createOpenApiApp();
 
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  }),
+);
 app.use("*", requestLogger);
 app.onError(errorHandler);
 app.notFound((c) => {
