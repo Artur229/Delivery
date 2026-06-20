@@ -41,9 +41,7 @@
 
 <main class="page-shell orders-page">
   <header>
-    <span class="label">Realtime</span>
-    <h1 class="display">Your culinary journey</h1>
-    <p class="body-lg">Orders update through the backend WebSocket event stream.</p>
+    <span class="label">Orders</span>
   </header>
 
   {#if isLoading}
@@ -123,8 +121,7 @@
   }
 
   header {
-    margin-bottom: 42px;
-    max-width: 850px;
+    margin-bottom: 24px;
   }
 
   .orders {

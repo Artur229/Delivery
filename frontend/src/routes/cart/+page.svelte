@@ -25,7 +25,7 @@
   {:else}
     <section class="cart-grid">
       <div class="items">
-        {#each $cart.items as item}
+        {#each $cart.items as item (item.id)}
           <article class="paper cart-item">
             <img src={getProductImage(item.product)} alt={item.product?.name ?? "Cart item"} />
             <div>
@@ -83,6 +83,7 @@
     display: grid;
     grid-template-columns: 150px minmax(0, 1fr);
     gap: 20px;
+    min-height: 166px;
     padding: 18px;
   }
 
@@ -101,6 +102,15 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    min-height: 44px;
+  }
+
+  .quantity span {
+    display: inline-grid;
+    width: 34px;
+    place-items: center;
+    color: var(--primary);
+    font-family: "Space Mono", monospace;
   }
 
   .summary,

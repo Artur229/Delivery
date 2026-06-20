@@ -107,7 +107,7 @@
   button.adding {
     background: var(--primary);
     color: var(--secondary-soft);
-    animation: cart-pop 0.58s ease;
+    animation: cart-pop 0.22s ease-out;
   }
 
   @keyframes cart-pop {
@@ -115,8 +115,8 @@
       transform: scale(1);
     }
 
-    42% {
-      transform: scale(1.14) rotate(-8deg);
+    50% {
+      transform: scale(1.06);
     }
 
     100% {

@@ -100,7 +100,7 @@
   }
 
   .cart-link.bump {
-    animation: bag-bump 0.52s cubic-bezier(0.17, 0.89, 0.32, 1.28);
+    animation: bag-bump 0.24s ease-out;
   }
 
   .cart-link span {
@@ -123,8 +123,8 @@
       transform: translateY(0) scale(1);
     }
 
-    45% {
-      transform: translateY(-5px) scale(1.09) rotate(-5deg);
+    50% {
+      transform: translateY(-2px) scale(1.05);
     }
 
     100% {

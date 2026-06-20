@@ -1,6 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { createOpenApiApp } from "../lib/openapi.js";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { cartItems, carts, products } from "../db/schema.js";
 import { notFound } from "../lib/errors.js";
@@ -144,6 +144,7 @@ const getCartWithItems = async (userId: string) => {
     where: eq(carts.id, cart.id),
     with: {
       items: {
+        orderBy: [asc(cartItems.id)],
         with: {
           product: true,
         },
