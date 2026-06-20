@@ -5,8 +5,8 @@
   import { cartStore } from "$lib/stores/cart";
   import { connectSocket } from "$lib/stores/socket";
 
-  let email = "customer1@delivery.test";
-  let password = "Password123!";
+  let email = "";
+  let password = "";
   let error = "";
 
   const submit = async () => {
@@ -39,11 +39,11 @@
       <h2 class="headline">Curate your culinary journey.</h2>
       <label>
         <span class="label">Email</span>
-        <input class="ink-input" bind:value={email} type="email" />
+        <input class="ink-input" bind:value={email} type="email" autocomplete="email" />
       </label>
       <label>
         <span class="label">Password</span>
-        <input class="ink-input" bind:value={password} type="password" />
+        <input class="ink-input" bind:value={password} type="password" autocomplete="current-password" />
       </label>
       {#if error}
         <p class="form-error">{error}</p>

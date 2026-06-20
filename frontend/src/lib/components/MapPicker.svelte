@@ -42,6 +42,8 @@
 
 <style>
   .map-wrap {
+    position: relative;
+    z-index: 0;
     padding: 12px;
   }
 

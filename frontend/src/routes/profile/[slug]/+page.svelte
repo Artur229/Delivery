@@ -1,6 +1,35 @@
 <script lang="ts">
-  import { MapPin, Phone, Shield } from "@lucide/svelte";
-  import { user } from "$lib/stores/auth";
+  import { MapPin, Phone, Save, Shield } from "@lucide/svelte";
+  import { authStore, user } from "$lib/stores/auth";
+
+  let phone = "";
+  let address = "";
+  let message = "";
+  let error = "";
+  let isSaving = false;
+
+  $: if ($user) {
+    phone = phone || $user.phone || "";
+    address = address || $user.address || "";
+  }
+
+  const saveProfile = async () => {
+    error = "";
+    message = "";
+    isSaving = true;
+
+    try {
+      await authStore.updateProfile({
+        phone: phone.trim() || null,
+        address: address.trim() || null,
+      });
+      message = "Profile details saved.";
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Could not save profile.";
+    } finally {
+      isSaving = false;
+    }
+  };
 </script>
 
 <main class="page-shell profile-page">
@@ -48,6 +77,32 @@
             future orders feel a little easier.
           </p>
         </article>
+        <form class="paper details-form" on:submit|preventDefault={saveProfile}>
+          <span class="label">Delivery details</span>
+          <label>
+            <span class="label">Phone</span>
+            <input class="ink-input" bind:value={phone} autocomplete="tel" placeholder="+380..." />
+          </label>
+          <label>
+            <span class="label">Address</span>
+            <textarea
+              class="ink-input"
+              bind:value={address}
+              autocomplete="street-address"
+              placeholder="City, street, building"
+              rows="3"
+            ></textarea>
+          </label>
+          {#if message}
+            <p class="form-success">{message}</p>
+          {/if}
+          {#if error}
+            <p class="form-error">{error}</p>
+          {/if}
+          <button class="primary-button" disabled={isSaving} type="submit">
+            <Save size={17} /> {isSaving ? "Saving..." : "Save details"}
+          </button>
+        </form>
       </section>
     </section>
   {/if}
@@ -70,8 +125,19 @@
 
   .profile-card,
   .journal article,
+  .details-form,
   .empty {
     padding: 28px;
+  }
+
+  .journal {
+    display: grid;
+    gap: 18px;
+  }
+
+  .details-form {
+    display: grid;
+    gap: 22px;
   }
 
   .avatar {
@@ -104,6 +170,12 @@
     color: var(--muted);
     gap: 12px;
     padding: 18px 0;
+  }
+
+  .form-success {
+    color: #3b6d32;
+    font-size: 0.9rem;
+    margin: 0;
   }
 
   @media (max-width: 850px) {

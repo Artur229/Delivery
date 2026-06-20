@@ -90,6 +90,11 @@ export const api = {
       body: JSON.stringify(body),
     }),
   me: () => apiFetch<User>("/me"),
+  updateMe: (body: { name?: string; phone?: string | null; address?: string | null; cover?: string | null }) =>
+    apiFetch<User>("/me", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
   categories: () => apiFetch<{ categories: Category[] }>("/categories"),
   tags: () => apiFetch<{ tags: Tag[] }>("/tags"),
   products: () => apiFetch<{ products: Product[] }>("/products"),

@@ -48,6 +48,16 @@ export const authStore = {
       return null;
     }
   },
+  updateProfile: async (body: {
+    name?: string;
+    phone?: string | null;
+    address?: string | null;
+    cover?: string | null;
+  }) => {
+    const updatedUser = await api.updateMe(body);
+    user.set(updatedUser);
+    return updatedUser;
+  },
   logout: () => {
     clearAuthTokens();
     user.set(null);

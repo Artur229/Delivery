@@ -5,7 +5,11 @@
   import { cart, cartStore } from "$lib/stores/cart";
 
   const updateQuantity = (itemId: string, quantity: number) => {
-    if (quantity < 1) return;
+    if (quantity < 1) {
+      cartStore.remove(itemId);
+      return;
+    }
+
     cartStore.update(itemId, quantity);
   };
 </script>
