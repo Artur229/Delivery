@@ -1,12 +1,14 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { CheckCircle2, ChefHat, Truck } from "@lucide/svelte";
-  import { api } from "$lib/api";
+  import { ArrowRight, CheckCircle2, ChefHat, ReceiptText, Truck, UserPlus } from "@lucide/svelte";
+  import { ApiClientError, api, getAccessToken } from "$lib/api";
   import { realtimeOrders } from "$lib/stores/socket";
   import type { Order } from "$lib/types";
 
   let orders: Order[] = [];
   let error = "";
+  let isGuest = false;
+  let isLoading = true;
 
   $: mergedOrders = [
     ...$realtimeOrders,
@@ -15,10 +17,21 @@
 
   onMount(async () => {
     try {
+      if (!getAccessToken()) {
+        isGuest = true;
+        return;
+      }
+
       const response = await api.orders();
       orders = response.orders;
     } catch (err) {
-      error = err instanceof Error ? err.message : "Failed to load orders";
+      if (err instanceof ApiClientError && err.code === 401) {
+        isGuest = true;
+      } else {
+        error = err instanceof Error ? err.message : "Failed to load orders";
+      }
+    } finally {
+      isLoading = false;
     }
   });
 
@@ -33,8 +46,50 @@
     <p class="body-lg">Orders update through the backend WebSocket event stream.</p>
   </header>
 
-  {#if error}
+  {#if isLoading}
+    <section class="empty-state paper">
+      <div class="empty-icon">
+        <ReceiptText size={24} />
+      </div>
+      <span class="label">Loading</span>
+      <h2 class="headline">Gathering your order history.</h2>
+      <p class="body-lg">A tiny moment while we check the kitchen ledger.</p>
+    </section>
+  {:else if isGuest}
+    <section class="empty-state paper">
+      <div class="empty-icon">
+        <UserPlus size={24} />
+      </div>
+      <span class="label">Account required</span>
+      <h2 class="headline">Sign in to keep your dining history.</h2>
+      <p class="body-lg">
+        Create an account or sign in, and this page will become your personal record of past and upcoming orders.
+      </p>
+      <div class="empty-actions">
+        <a class="primary-button" href="/register">
+          Create account <ArrowRight size={18} />
+        </a>
+        <a class="secondary-button" href="/login">Sign in</a>
+      </div>
+    </section>
+  {:else if error}
     <p class="form-error">{error}</p>
+  {:else if mergedOrders.length === 0}
+    <section class="empty-state paper">
+      <div class="empty-icon">
+        <ReceiptText size={24} />
+      </div>
+      <span class="label">No orders yet</span>
+      <h2 class="headline">Your future purchases will appear here.</h2>
+      <p class="body-lg">
+        Once you place an order, you will be able to follow its status and revisit everything you have enjoyed.
+      </p>
+      <div class="empty-actions">
+        <a class="primary-button" href="/catalog">
+          Browse catalog <ArrowRight size={18} />
+        </a>
+      </div>
+    </section>
   {:else}
     <section class="orders">
       {#each mergedOrders as order}
@@ -75,6 +130,35 @@
   .orders {
     display: grid;
     gap: 20px;
+  }
+
+  .empty-state {
+    display: grid;
+    max-width: 760px;
+    gap: 18px;
+    padding: clamp(28px, 5vw, 54px);
+  }
+
+  .empty-icon {
+    display: grid;
+    width: 58px;
+    height: 58px;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--tertiary);
+    color: var(--secondary);
+  }
+
+  .empty-state h2,
+  .empty-state p {
+    margin: 0;
+  }
+
+  .empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
   }
 
   .order-card {
