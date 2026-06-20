@@ -4,6 +4,7 @@ import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
 import { authRoute } from "./routes/auth.js";
 import { cartRoute } from "./routes/cart.js";
+import { chatRoute } from "./routes/chat.js";
 import { catalogRoute } from "./routes/catalog.js";
 import { healthRoute } from "./routes/health.js";
 import { inventoryRoute } from "./routes/inventory.js";
@@ -35,6 +36,7 @@ app.route("/", cartRoute);
 app.route("/", ordersRoute);
 app.route("/", paymentsRoute);
 app.route("/", reviewsRoute);
+app.route("/", chatRoute);
 
 app.doc("/api/openapi.json", {
   openapi: "3.0.0",
