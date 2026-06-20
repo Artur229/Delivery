@@ -149,6 +149,16 @@ export const api = {
       body: JSON.stringify(body),
     }),
   orders: () => apiFetch<{ orders: Order[] }>("/orders"),
+  adminOrders: () => apiFetch<{ orders: Order[] }>("/admin/orders"),
+  updateOrderStatus: (orderId: string, status: Order["status"]) =>
+    apiFetch<Order>(`/orders/${orderId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
+  cancelOrder: (orderId: string) =>
+    apiFetch<Order>(`/orders/${orderId}/cancel`, {
+      method: "PATCH",
+    }),
   checkout: (orderId: string) =>
     apiFetch<{ checkoutUrl: string; sessionId: string }>(`/payments/checkout/${orderId}`, {
       method: "POST",

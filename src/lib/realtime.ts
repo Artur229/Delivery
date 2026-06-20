@@ -2,7 +2,7 @@ import type { WebSocketLike } from "@hono/node-server";
 import type { WSContext } from "hono/ws";
 import type { Role } from "../constants/roles.js";
 
-export type RealtimeEvent = "cart_updated" | "order_updated" | "new_message";
+export type RealtimeEvent = "cart_updated" | "order_updated" | "order_cancelled" | "new_message";
 
 type RealtimeClient = {
   userId: string;

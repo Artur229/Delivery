@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { ArrowRight, CheckCircle2, ChefHat, ReceiptText, Truck, UserPlus } from "@lucide/svelte";
+  import { ArrowRight, CheckCircle2, ChefHat, ReceiptText, Truck, XCircle } from "@lucide/svelte";
   import { ApiClientError, api, getAccessToken } from "$lib/api";
   import { realtimeOrders } from "$lib/stores/socket";
   import type { Order } from "$lib/types";
@@ -14,6 +14,9 @@
     ...$realtimeOrders,
     ...orders.filter((order) => !$realtimeOrders.some((item) => item.id === order.id)),
   ];
+  $: activeOrders = mergedOrders.filter(
+    (order) => order.status !== "delivered" && order.status !== "cancelled",
+  );
 
   onMount(async () => {
     try {
@@ -36,7 +39,20 @@
   });
 
   const statusIndex = (status: string) =>
-    ["created", "paid", "cooking", "ready", "on_the_way", "delivered"].indexOf(status);
+    ["created", "paid", "cooking", "ready", "on_the_way", "delivered", "cancelled"].indexOf(status);
+
+  const canCancel = (order: Order) => order.status === "created" || order.status === "paid";
+
+  const cancelOrder = async (orderId: string) => {
+    error = "";
+
+    try {
+      const cancelledOrder = await api.cancelOrder(orderId);
+      orders = orders.map((order) => (order.id === orderId ? cancelledOrder : order));
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Could not cancel order";
+    }
+  };
 </script>
 
 <main class="page-shell orders-page">
@@ -50,37 +66,36 @@
         <ReceiptText size={24} />
       </div>
       <span class="label">Loading</span>
-      <h2 class="headline">Gathering your order history.</h2>
-      <p class="body-lg">A tiny moment while we check the kitchen ledger.</p>
+      <h2 class="headline">Gathering your active orders.</h2>
+      <p class="body-lg">A moment while we check what is currently in progress.</p>
     </section>
   {:else if isGuest}
     <section class="empty-state paper">
       <div class="empty-icon">
-        <UserPlus size={24} />
+        <ReceiptText size={24} />
       </div>
-      <span class="label">Account required</span>
-      <h2 class="headline">Sign in to keep your dining history.</h2>
+      <span class="label">No active orders</span>
+      <h2 class="headline">Your orders will appear here.</h2>
       <p class="body-lg">
-        Create an account or sign in, and this page will become your personal record of past and upcoming orders.
+        When you place an order from an account, this is where you can follow its status and cancel it before it goes to the kitchen.
       </p>
       <div class="empty-actions">
-        <a class="primary-button" href="/register">
-          Create account <ArrowRight size={18} />
+        <a class="primary-button" href="/catalog">
+          Browse catalog <ArrowRight size={18} />
         </a>
-        <a class="secondary-button" href="/login">Sign in</a>
       </div>
     </section>
   {:else if error}
     <p class="form-error">{error}</p>
-  {:else if mergedOrders.length === 0}
+  {:else if activeOrders.length === 0}
     <section class="empty-state paper">
       <div class="empty-icon">
         <ReceiptText size={24} />
       </div>
-      <span class="label">No orders yet</span>
-      <h2 class="headline">Your future purchases will appear here.</h2>
+      <span class="label">No active orders</span>
+      <h2 class="headline">Your orders will appear here.</h2>
       <p class="body-lg">
-        Once you place an order, you will be able to follow its status and revisit everything you have enjoyed.
+        Place something from the catalog and you will be able to track it here while it is being prepared and delivered.
       </p>
       <div class="empty-actions">
         <a class="primary-button" href="/catalog">
@@ -90,7 +105,7 @@
     </section>
   {:else}
     <section class="orders">
-      {#each mergedOrders as order}
+      {#each activeOrders as order}
         <article class="paper order-card">
           <div class="order-top">
             <div>
@@ -109,6 +124,11 @@
               <li>{item.quantity} × {item.product?.name ?? "Product"} · ₴{item.price}</li>
             {/each}
           </ul>
+          {#if canCancel(order)}
+            <button class="secondary-button cancel-button" on:click={() => cancelOrder(order.id)}>
+              <XCircle size={17} /> Cancel order
+            </button>
+          {/if}
         </article>
       {/each}
     </section>
@@ -199,6 +219,10 @@
   li {
     color: var(--muted);
     line-height: 1.7;
+  }
+
+  .cancel-button {
+    margin-top: 18px;
   }
 
   @media (max-width: 700px) {

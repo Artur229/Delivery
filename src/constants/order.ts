@@ -5,6 +5,7 @@ export const orderStatuses = [
   "ready",
   "on_the_way",
   "delivered",
+  "cancelled",
 ] as const;
 
 export const deliveryTypes = ["delivery", "pickup"] as const;

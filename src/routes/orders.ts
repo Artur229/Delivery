@@ -12,7 +12,7 @@ import { db } from "../db/client.js";
 import { cartItems, carts, orderItems, orders, products, users } from "../db/schema.js";
 import { badRequest, forbidden, notFound } from "../lib/errors.js";
 import { logger } from "../lib/logger.js";
-import { sendToRoles, sendToUser } from "../lib/realtime.js";
+import { sendToRoles, sendToUser, type RealtimeEvent } from "../lib/realtime.js";
 import { authRequired, type AppBindings } from "../middleware/auth.js";
 import { allowRoles } from "../middleware/roles.js";
 
@@ -213,6 +213,10 @@ const canMoveStatus = (
   currentStatus: OrderStatus,
   nextStatus: OrderStatus,
 ) => {
+  if (currentStatus === "cancelled" || currentStatus === "delivered") {
+    return false;
+  }
+
   if (role === "owner" || role === "admin") {
     return true;
   }
@@ -232,6 +236,37 @@ const canMoveStatus = (
   }
 
   return false;
+};
+
+const canCancelOrder = (role: Role, actorId: string, orderUserId: string | null, status: OrderStatus) => {
+  if (status === "cancelled" || status === "delivered") {
+    return false;
+  }
+
+  if (role === "owner" || role === "admin") {
+    return true;
+  }
+
+  return orderUserId === actorId && (status === "created" || status === "paid");
+};
+
+const broadcastOrderChange = (
+  order: ReturnType<typeof toOrderResponse>,
+  eventType: RealtimeEvent = "order_updated",
+) => {
+  if (order.userId) {
+    sendToUser(order.userId, eventType, order);
+  }
+
+  sendToRoles(orderSubscriberRoles, eventType, order);
+
+  if (eventType !== "order_updated") {
+    if (order.userId) {
+      sendToUser(order.userId, "order_updated", order);
+    }
+
+    sendToRoles(orderSubscriberRoles, "order_updated", order);
+  }
 };
 
 const createOrderRoute = createRoute({
@@ -372,6 +407,28 @@ const updateOrderStatusRoute = createRoute({
   responses: {
     200: {
       description: "Updated order status",
+      content: {
+        "application/json": {
+          schema: orderResponseSchema,
+        },
+      },
+    },
+    ...sharedErrorResponses,
+  },
+});
+
+const cancelOrderRoute = createRoute({
+  method: "patch",
+  path: "/orders/{orderId}/cancel",
+  tags: ["Orders"],
+  security: [{ BearerAuth: [] }],
+  middleware: authOnly,
+  request: {
+    params: orderIdParamSchema,
+  },
+  responses: {
+    200: {
+      description: "Cancelled order",
       content: {
         "application/json": {
           schema: orderResponseSchema,
@@ -634,11 +691,41 @@ export const ordersRoute = createOpenApiApp<AppBindings>()
 
     const response = toOrderResponse(await getOrderWithItems(updatedOrder.id));
 
-    if (response.userId) {
-      sendToUser(response.userId, "order_updated", response);
+    broadcastOrderChange(response);
+
+    return c.json(response, 200);
+  })
+  .openapi(cancelOrderRoute, async (c) => {
+    const currentUser = c.get("currentUser");
+    const { orderId } = c.req.valid("param");
+    const order = await getOrderWithItems(orderId);
+    const role = currentUser.role as Role;
+
+    if (!canCancelOrder(role, currentUser.id, order.userId, order.status)) {
+      throw forbidden("This order cannot be cancelled by this user");
     }
 
-    sendToRoles(orderSubscriberRoles, "order_updated", response);
+    const [cancelledOrder] = await db
+      .update(orders)
+      .set({
+        status: "cancelled",
+        paymentStatus: order.paymentStatus === "paid" ? "refunded" : order.paymentStatus,
+      })
+      .where(eq(orders.id, order.id))
+      .returning();
+
+    if (!cancelledOrder) {
+      throw notFound("Order not found");
+    }
+
+    logger.info("orders", "order cancelled", {
+      actorId: currentUser.id,
+      orderId: cancelledOrder.id,
+      from: order.status,
+    });
+
+    const response = toOrderResponse(await getOrderWithItems(cancelledOrder.id));
+    broadcastOrderChange(response, "order_cancelled");
 
     return c.json(response, 200);
   });

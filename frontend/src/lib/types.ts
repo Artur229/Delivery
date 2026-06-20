@@ -74,7 +74,8 @@ export type OrderStatus =
   | "cooking"
   | "ready"
   | "on_the_way"
-  | "delivered";
+  | "delivered"
+  | "cancelled";
 
 export type Order = {
   id: string;
