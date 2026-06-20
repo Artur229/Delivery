@@ -45,6 +45,16 @@ export type Product = {
   ingredients?: Ingredient[];
 };
 
+export type InventoryItem = {
+  id: string;
+  name: string;
+  slug: string;
+  quantity: string;
+  unit: string;
+  cover: string | null;
+  updatedAt: string | null;
+};
+
 export type Ingredient = {
   id: string;
   productId: string | null;

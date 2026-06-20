@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   Cart,
   Category,
+  InventoryItem,
   Order,
   Product,
   Review,
@@ -150,6 +151,8 @@ export const api = {
     }),
   orders: () => apiFetch<{ orders: Order[] }>("/orders"),
   adminOrders: () => apiFetch<{ orders: Order[] }>("/admin/orders"),
+  users: () => apiFetch<{ users: User[] }>("/users"),
+  inventory: () => apiFetch<{ inventory: InventoryItem[] }>("/inventory"),
   updateOrderStatus: (orderId: string, status: Order["status"]) =>
     apiFetch<Order>(`/orders/${orderId}/status`, {
       method: "PATCH",

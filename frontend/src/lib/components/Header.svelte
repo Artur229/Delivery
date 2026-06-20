@@ -12,6 +12,12 @@
     { href: "/orders", label: "Orders" },
   ];
 
+  $: canSeeDashboard =
+    $user?.role === "owner" ||
+    $user?.role === "admin" ||
+    $user?.role === "chef" ||
+    $user?.role === "courier";
+
   $: cartCount = $cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
   $: if (cartCount > lastCartCount) {
     bumpCart = false;
@@ -30,6 +36,9 @@
       {#each links as link}
         <a href={link.href}>{link.label}</a>
       {/each}
+      {#if canSeeDashboard}
+        <a href="/admin">Dashboard</a>
+      {/if}
     </nav>
     <div class="actions">
       <a class:bump={bumpCart} class="icon-button cart-link" href="/cart" aria-label="Cart">
