@@ -132,6 +132,17 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  createGuestOrder: (body: {
+    deliveryType: "delivery" | "pickup";
+    address?: string | null;
+    phone?: string | null;
+    paymentType: "cash";
+    items: Array<{ productSlug: string; quantity: number }>;
+  }) =>
+    apiFetch<Order>("/guest/orders", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   orders: () => apiFetch<{ orders: Order[] }>("/orders"),
   checkout: (orderId: string) =>
     apiFetch<{ checkoutUrl: string; sessionId: string }>(`/payments/checkout/${orderId}`, {

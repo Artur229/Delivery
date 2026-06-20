@@ -1,6 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { createOpenApiApp } from "../lib/openapi.js";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import {
   deliveryTypes,
   orderStatuses,
@@ -67,6 +67,18 @@ const createOrderBodySchema = z.object({
   address: z.string().trim().min(3).max(255).nullable().optional(),
   phone: z.string().trim().min(3).max(40).nullable().optional(),
   paymentType: z.enum(paymentTypes),
+});
+
+const createGuestOrderBodySchema = createOrderBodySchema.extend({
+  paymentType: z.literal("cash"),
+  items: z
+    .array(
+      z.object({
+        productSlug: z.string().trim().min(1),
+        quantity: z.number().int().min(1).max(99),
+      }),
+    )
+    .min(1),
 });
 
 const updateOrderStatusBodySchema = z.object({
@@ -251,6 +263,34 @@ const createOrderRoute = createRoute({
   },
 });
 
+const createGuestOrderRoute = createRoute({
+  method: "post",
+  path: "/guest/orders",
+  tags: ["Orders"],
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": {
+          schema: createGuestOrderBodySchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Created guest cash order",
+      content: {
+        "application/json": {
+          schema: orderResponseSchema,
+        },
+      },
+    },
+    400: sharedErrorResponses[400],
+    404: sharedErrorResponses[404],
+  },
+});
+
 const listMyOrdersRoute = createRoute({
   method: "get",
   path: "/orders",
@@ -421,6 +461,78 @@ export const ordersRoute = createOpenApiApp<AppBindings>()
       totalPrice: "0.00",
     });
     sendToUser(currentUser.id, "order_updated", response);
+    sendToRoles(orderSubscriberRoles, "order_updated", response);
+
+    return c.json(response, 201);
+  })
+  .openapi(createGuestOrderRoute, async (c) => {
+    const body = c.req.valid("json");
+
+    if (body.deliveryType === "delivery" && !body.address) {
+      throw badRequest("Address is required for delivery");
+    }
+
+    if (!body.phone) {
+      throw badRequest("Phone is required");
+    }
+
+    const requestedItems = new Map<string, number>();
+    for (const item of body.items) {
+      requestedItems.set(item.productSlug, (requestedItems.get(item.productSlug) ?? 0) + item.quantity);
+    }
+
+    const foundProducts = await db.query.products.findMany({
+      where: inArray(products.slug, Array.from(requestedItems.keys())),
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+        cover: true,
+        price: true,
+      },
+    });
+
+    if (foundProducts.length !== requestedItems.size) {
+      throw notFound("One or more products were not found");
+    }
+
+    const totalPrice = foundProducts.reduce((sum, product) => {
+      return sum + Number(product.price) * (requestedItems.get(product.slug) ?? 0);
+    }, 0);
+
+    if (totalPrice <= 0) {
+      throw badRequest("Order total must be greater than zero");
+    }
+
+    const [createdOrder] = await db
+      .insert(orders)
+      .values({
+        userId: null,
+        totalPrice: totalPrice.toFixed(2),
+        status: "created",
+        deliveryType: body.deliveryType,
+        address: body.address ?? null,
+        phone: body.phone,
+        paymentType: "cash",
+        paymentStatus: "pending",
+      })
+      .returning();
+
+    await db.insert(orderItems).values(
+      foundProducts.map((product) => ({
+        orderId: createdOrder.id,
+        productId: product.id,
+        quantity: requestedItems.get(product.slug) ?? 1,
+        price: product.price,
+      })),
+    );
+
+    logger.info("orders", "guest order created", {
+      orderId: createdOrder.id,
+      totalPrice: createdOrder.totalPrice,
+    });
+
+    const response = toOrderResponse(await getOrderWithItems(createdOrder.id));
     sendToRoles(orderSubscriberRoles, "order_updated", response);
 
     return c.json(response, 201);

@@ -11,8 +11,9 @@
   onMount(async () => {
     const currentUser = await authStore.loadMe();
 
+    await cartStore.load().catch(() => undefined);
+
     if (currentUser) {
-      await cartStore.load().catch(() => undefined);
       connectSocket();
     }
   });
