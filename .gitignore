@@ -4,5 +4,7 @@ dist
 build
 .env
 .DS_Store
+.vercel
 plan.md
 changelog.md
+.env*
