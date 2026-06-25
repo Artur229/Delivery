@@ -11,12 +11,13 @@ let socket: WebSocket | null = null;
 
 export const connectSocket = () => {
   const token = getAccessToken();
+  const wsUrl = PUBLIC_WS_URL || (import.meta.env.DEV ? "ws://localhost:3000/ws" : "");
 
-  if (!token || socket?.readyState === WebSocket.OPEN) {
+  if (!token || !wsUrl || socket?.readyState === WebSocket.OPEN) {
     return;
   }
 
-  socket = new WebSocket(`${PUBLIC_WS_URL || "ws://localhost:3000/ws"}?token=${token}`);
+  socket = new WebSocket(`${wsUrl}?token=${token}`);
 
   socket.addEventListener("open", () => socketConnected.set(true));
   socket.addEventListener("close", () => socketConnected.set(false));
