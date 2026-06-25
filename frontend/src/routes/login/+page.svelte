@@ -22,7 +22,12 @@
         return;
       }
 
-      if (currentUser?.role === "owner" || currentUser?.role === "admin" || currentUser?.role === "chef") {
+      if (currentUser?.role === "chef") {
+        await goto("/chef");
+        return;
+      }
+
+      if (currentUser?.role === "owner" || currentUser?.role === "admin") {
         await goto("/admin");
         return;
       }

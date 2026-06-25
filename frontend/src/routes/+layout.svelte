@@ -20,7 +20,9 @@
   });
 
   $: isWorkspace =
-    $page.url.pathname.startsWith("/admin") || $page.url.pathname.startsWith("/courier");
+    $page.url.pathname.startsWith("/admin") ||
+    $page.url.pathname.startsWith("/chef") ||
+    $page.url.pathname.startsWith("/courier");
 </script>
 
 <Header />
