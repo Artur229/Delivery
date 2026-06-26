@@ -49,7 +49,7 @@
 
   p {
     color: var(--muted);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.75rem;
     margin: 12px 4px 4px;
     text-transform: uppercase;

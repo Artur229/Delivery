@@ -78,7 +78,7 @@
   strong {
     display: block;
     color: var(--primary);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.72rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;

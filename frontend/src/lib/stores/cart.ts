@@ -81,6 +81,20 @@ export const cartStore = {
     cart.set(currentCart);
     return currentCart;
   },
+  mergeGuestIntoAccount: async () => {
+    const guestItems = readGuestItems();
+
+    if (!hasToken() || guestItems.length === 0) {
+      return cartStore.load();
+    }
+
+    await Promise.all(
+      guestItems.map((item) => api.addCartItem({ productSlug: item.productSlug, quantity: item.quantity })),
+    );
+    writeGuestItems([]);
+
+    return cartStore.load();
+  },
   add: async (productSlug: string, quantity = 1) => {
     if (!hasToken()) {
       const items = readGuestItems();

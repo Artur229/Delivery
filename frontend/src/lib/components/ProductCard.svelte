@@ -100,7 +100,7 @@
 
   strong {
     color: var(--primary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 1.7rem;
   }
 

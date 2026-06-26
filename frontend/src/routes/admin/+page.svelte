@@ -194,26 +194,26 @@
 
       {#if activeSection === "overview"}
         <section class="overview-grid">
-          <article class="metric-card featured">
+          <button class="metric-card featured" type="button" on:click={() => (activeSection = "finance")}>
             <span class="label">Paid revenue</span>
             <strong>{formatMoney(paidRevenue)}</strong>
             <p>{orders.length} orders recorded in the current ledger.</p>
-          </article>
-          <article class="metric-card dark">
+          </button>
+          <button class="metric-card dark" type="button" on:click={() => (activeSection = "orders")}>
             <span class="label">Active orders</span>
             <strong>{activeOrders.length}</strong>
             <p>Kitchen and delivery work currently in motion.</p>
-          </article>
-          <article class="metric-card">
+          </button>
+          <button class="metric-card" type="button" on:click={() => (activeSection = "finance")}>
             <span class="label">Average order</span>
             <strong>{formatMoney(averageOrder)}</strong>
             <p>Calculated from paid and refunded orders.</p>
-          </article>
-          <article class="metric-card">
+          </button>
+          <button class="metric-card" type="button" on:click={() => (activeSection = "inventory")}>
             <span class="label">Low stock</span>
             <strong>{lowStock.length}</strong>
             <p>Inventory items at 10 units or below.</p>
-          </article>
+          </button>
         </section>
 
         <section class="content-grid">
@@ -249,6 +249,27 @@
             <p>{categories.length} categories and {tags.length} tags shape the catalog filters.</p>
             <button on:click={() => (activeSection = "catalog")}>Review menu</button>
           </article>
+        </section>
+
+        <section class="ops-grid">
+          <button class="paper action-card" type="button" on:click={() => (activeSection = "orders")}>
+            <ClipboardList size={24} />
+            <span class="label">Kitchen queue</span>
+            <strong>{orders.filter((order) => order.status === "paid" || order.status === "cooking").length}</strong>
+            <p>Paid and cooking tickets that need operational attention.</p>
+          </button>
+          <button class="paper action-card" type="button" on:click={() => (activeSection = "orders")}>
+            <PackageSearch size={24} />
+            <span class="label">Delivery queue</span>
+            <strong>{orders.filter((order) => order.status === "ready" || order.status === "on_the_way").length}</strong>
+            <p>Ready pickups and couriers already on the way.</p>
+          </button>
+          <button class="paper action-card" type="button" on:click={() => (activeSection = "staff")}>
+            <UsersRound size={24} />
+            <span class="label">Team access</span>
+            <strong>{team.length}</strong>
+            <p>Owner, admin, kitchen, and courier profiles in the workspace.</p>
+          </button>
         </section>
       {:else if activeSection === "orders"}
         <section class="stats">
@@ -420,12 +441,23 @@
     gap: 26px;
     border-right: 1px solid rgba(124, 87, 48, 0.18);
     background: rgba(239, 238, 235, 0.72);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 30px 24px;
+  }
+
+  .dashboard-sidebar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .dashboard-sidebar::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(124, 87, 48, 0.24);
   }
 
   .dashboard-brand {
     color: var(--primary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-logo);
     font-size: 2.1rem;
     font-weight: 700;
     line-height: 1;
@@ -433,7 +465,7 @@
 
   .dashboard-sidebar h1 {
     margin: 8px 0 0;
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 1.9rem;
   }
 
@@ -527,6 +559,19 @@
     position: relative;
     overflow: hidden;
     background: var(--surface-container-low);
+    color: var(--primary);
+    cursor: pointer;
+    text-align: left;
+    transition:
+      border-color 160ms ease,
+      transform 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .metric-card:hover {
+    border-color: rgba(124, 87, 48, 0.32);
+    box-shadow: 0 18px 42px rgba(35, 32, 28, 0.08);
+    transform: translateY(-2px);
   }
 
   .metric-card::before {
@@ -554,7 +599,7 @@
   .finance-hero h3 {
     display: block;
     color: var(--secondary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: clamp(2rem, 4vw, 3.5rem);
     line-height: 1.05;
     margin-top: 8px;
@@ -576,10 +621,16 @@
 
   .content-grid,
   .finance-grid,
-  .settings-grid {
+  .settings-grid,
+  .ops-grid {
     display: grid;
     grid-template-columns: 1.35fr 0.65fr;
     gap: 18px;
+  }
+
+  .ops-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 18px;
   }
 
   .wide {
@@ -614,8 +665,27 @@
     background: transparent;
     color: var(--secondary);
     cursor: pointer;
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     text-transform: uppercase;
+  }
+
+  .action-card {
+    display: grid;
+    gap: 12px;
+    border: 1px solid rgba(124, 87, 48, 0.18);
+    background: var(--surface-container-low);
+    color: var(--primary);
+    cursor: pointer;
+    font-family: var(--font-body);
+    text-align: left;
+    text-transform: none;
+  }
+
+  .action-card strong {
+    color: var(--secondary);
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    line-height: 1;
   }
 
   .order-card {
@@ -640,7 +710,7 @@
     background: var(--surface-container);
     color: var(--muted);
     cursor: pointer;
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.72rem;
     padding: 0.52rem 0.72rem;
     text-transform: uppercase;
@@ -692,7 +762,7 @@
   .catalog-card h3,
   .staff-card h3 {
     margin: 8px 0;
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 1.45rem;
   }
 
@@ -718,7 +788,7 @@
     border-radius: 999px;
     background: var(--tertiary);
     color: var(--secondary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 1.5rem;
   }
 
@@ -736,6 +806,9 @@
     .dashboard-sidebar {
       position: static;
       height: auto;
+      max-height: none;
+      overflow: visible;
+      overscroll-behavior: auto;
     }
 
     .dashboard-nav {
@@ -751,7 +824,8 @@
 
     .content-grid,
     .finance-grid,
-    .settings-grid {
+    .settings-grid,
+    .ops-grid {
       grid-template-columns: 1fr;
     }
   }

@@ -10,7 +10,7 @@ import { authRequired, type AppBindings } from "../middleware/auth.js";
 import { allowRoles } from "../middleware/roles.js";
 
 const canReadInventory = [authRequired, allowRoles(["owner", "admin", "chef"])];
-const canWriteInventory = [authRequired, allowRoles(["owner", "admin"])];
+const canWriteInventory = [authRequired, allowRoles(["owner", "admin", "chef"])];
 
 const errorResponseSchema = z.object({
   error: z.string(),

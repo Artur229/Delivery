@@ -133,6 +133,27 @@
       <a class="primary-button" href="/login">Sign in</a>
     </section>
   {:else}
+    <section class="courier-metrics">
+      <button class="metric-card" type="button" on:click={() => (activeTab = "available")}>
+        <PackageCheck size={22} />
+        <span class="label">Ready pickup</span>
+        <strong>{availableOrders.length}</strong>
+        <p>Orders waiting for a courier handoff.</p>
+      </button>
+      <button class="metric-card dark" type="button" on:click={() => (activeTab = "active")}>
+        <Truck size={22} />
+        <span class="label">On the way</span>
+        <strong>{activeOrders.length}</strong>
+        <p>Deliveries currently in progress.</p>
+      </button>
+      <button class="metric-card" type="button" on:click={() => (activeTab = "completed")}>
+        <CheckCircle2 size={22} />
+        <span class="label">Completed</span>
+        <strong>{completedOrders.length}</strong>
+        <p>Finished drops from the current board.</p>
+      </button>
+    </section>
+
     <section class="courier-tabs" aria-label="Courier order filters">
       <button class:active={activeTab === "available"} on:click={() => (activeTab = "available")}>
         <PackageCheck size={18} />
@@ -243,12 +264,13 @@
 
   .courier-hero h1 {
     margin: 8px 0 14px;
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: clamp(3rem, 8vw, 5.8rem);
     line-height: 0.95;
   }
 
   .courier-hero p,
+  .metric-card p,
   .delivery-card li {
     color: var(--muted);
     line-height: 1.7;
@@ -272,6 +294,54 @@
   .shift-card span:last-child {
     color: var(--muted);
     margin-top: 4px;
+  }
+
+  .courier-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .metric-card {
+    display: grid;
+    min-height: 160px;
+    align-content: space-between;
+    border: 1px solid rgba(124, 87, 48, 0.18);
+    border-radius: 8px;
+    background: var(--surface-container);
+    color: var(--primary);
+    cursor: pointer;
+    padding: 20px;
+    text-align: left;
+    transition:
+      border-color 160ms ease,
+      transform 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .metric-card:hover {
+    border-color: rgba(124, 87, 48, 0.32);
+    box-shadow: 0 18px 42px rgba(35, 32, 28, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .metric-card strong {
+    color: var(--secondary);
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .metric-card.dark {
+    background: var(--primary);
+    color: var(--secondary-soft);
+  }
+
+  .metric-card.dark strong,
+  .metric-card.dark .label,
+  .metric-card.dark p {
+    color: var(--secondary-soft);
   }
 
   .courier-tabs {
@@ -312,7 +382,7 @@
     place-items: center;
     border-radius: 999px;
     background: rgba(124, 87, 48, 0.14);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.75rem;
   }
 
@@ -342,13 +412,13 @@
 
   .delivery-top h2 {
     margin: 5px 0 0;
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: clamp(1.8rem, 4vw, 2.8rem);
   }
 
   .delivery-top strong {
     color: var(--secondary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 2rem;
   }
 
@@ -368,7 +438,7 @@
 
   .delivery-address span {
     color: var(--muted);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.76rem;
     text-transform: uppercase;
   }
@@ -381,7 +451,7 @@
   .delivery-meta {
     flex-wrap: wrap;
     color: var(--muted);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.78rem;
     text-transform: uppercase;
   }
@@ -438,6 +508,10 @@
 
     .shift-card {
       min-width: 0;
+    }
+
+    .courier-metrics {
+      grid-template-columns: 1fr;
     }
 
     .courier-tabs {

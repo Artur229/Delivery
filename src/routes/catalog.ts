@@ -17,6 +17,7 @@ import { authRequired, type AppBindings } from "../middleware/auth.js";
 import { allowRoles } from "../middleware/roles.js";
 
 const adminOnly = [authRequired, allowRoles(["owner", "admin"])];
+const menuEditors = [authRequired, allowRoles(["owner", "admin", "chef"])];
 
 const errorResponseSchema = z.object({
   error: z.string(),
@@ -585,7 +586,7 @@ const createProductRoute = createRoute({
   path: "/products",
   tags: ["Catalog"],
   security: [{ BearerAuth: [] }],
-  middleware: adminOnly,
+  middleware: menuEditors,
   request: {
     body: {
       required: true,
@@ -614,7 +615,7 @@ const updateProductRoute = createRoute({
   path: "/products/{slug}",
   tags: ["Catalog"],
   security: [{ BearerAuth: [] }],
-  middleware: adminOnly,
+  middleware: menuEditors,
   request: {
     params: slugParamSchema,
     body: {
@@ -644,7 +645,7 @@ const deleteProductRoute = createRoute({
   path: "/products/{slug}",
   tags: ["Catalog"],
   security: [{ BearerAuth: [] }],
-  middleware: adminOnly,
+  middleware: menuEditors,
   request: {
     params: slugParamSchema,
   },
@@ -686,7 +687,7 @@ const createProductIngredientRoute = createRoute({
   path: "/products/{slug}/ingredients",
   tags: ["Catalog"],
   security: [{ BearerAuth: [] }],
-  middleware: adminOnly,
+  middleware: menuEditors,
   request: {
     params: slugParamSchema,
     body: {
@@ -716,7 +717,7 @@ const updateProductIngredientRoute = createRoute({
   path: "/products/{slug}/ingredients/{ingredientId}",
   tags: ["Catalog"],
   security: [{ BearerAuth: [] }],
-  middleware: adminOnly,
+  middleware: menuEditors,
   request: {
     params: z.object({
       slug: z.string().min(1),
@@ -749,7 +750,7 @@ const deleteProductIngredientRoute = createRoute({
   path: "/products/{slug}/ingredients/{ingredientId}",
   tags: ["Catalog"],
   security: [{ BearerAuth: [] }],
-  middleware: adminOnly,
+  middleware: menuEditors,
   request: {
     params: z.object({
       slug: z.string().min(1),

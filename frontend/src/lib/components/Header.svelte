@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { ShoppingBag, UserRound, LogOut } from "@lucide/svelte";
+  import { ShoppingBag, UserRound, LogOut, Menu, X } from "@lucide/svelte";
   import { cart } from "$lib/stores/cart";
   import { authStore, user } from "$lib/stores/auth";
 
   let lastCartCount = 0;
   let bumpCart = false;
+  let isMenuOpen = false;
 
   const links = [
     { href: "/", label: "Discover" },
@@ -35,8 +36,8 @@
 
 <header class="site-header">
   <div class="page-shell header-inner">
-    <a class="brand" href="/">LuxeEats</a>
-    <nav>
+    <a class="brand" href="/" on:click={() => (isMenuOpen = false)}>LuxeEats</a>
+    <nav class="desktop-nav" aria-label="Primary navigation">
       {#each links as link}
         <a href={link.href}>{link.label}</a>
       {/each}
@@ -51,17 +52,51 @@
           <span>{cartCount}</span>
         {/if}
       </a>
+      <a class="account-link" href="/account" aria-label={$user ? "Account" : "Sign in or register"}>
+        <UserRound size={20} />
+        <span>Account</span>
+      </a>
       {#if $user}
-        <a class="icon-button" href={`/profile/${$user.slug}`} aria-label="Profile">
-          <UserRound size={20} />
-        </a>
-        <button class="icon-button" aria-label="Logout" on:click={authStore.logout}>
+        <button class="icon-button logout-button" type="button" aria-label="Logout" on:click={authStore.logout}>
           <LogOut size={18} />
         </button>
-      {:else}
-        <a class="secondary-button auth-link" href="/login">Sign in</a>
       {/if}
+      <button
+        class="icon-button menu-toggle"
+        type="button"
+        aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        aria-expanded={isMenuOpen}
+        on:click={() => (isMenuOpen = !isMenuOpen)}
+      >
+        {#if isMenuOpen}
+          <X size={20} />
+        {:else}
+          <Menu size={20} />
+        {/if}
+      </button>
     </div>
+    {#if isMenuOpen}
+      <nav class="mobile-menu" aria-label="Mobile navigation">
+        {#each links as link}
+          <a href={link.href} on:click={() => (isMenuOpen = false)}>{link.label}</a>
+        {/each}
+        {#if canSeeDashboard}
+          <a href={dashboardHref} on:click={() => (isMenuOpen = false)}>{dashboardLabel}</a>
+        {/if}
+        <a href="/account" on:click={() => (isMenuOpen = false)}>Account</a>
+        {#if $user}
+          <button
+            type="button"
+            on:click={() => {
+              isMenuOpen = false;
+              authStore.logout();
+            }}
+          >
+            Sign out
+          </button>
+        {/if}
+      </nav>
+    {/if}
   </div>
 </header>
 
@@ -81,24 +116,29 @@
     align-items: center;
     justify-content: space-between;
     gap: 24px;
+    flex-wrap: wrap;
   }
 
   .brand {
     color: var(--primary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-logo);
     font-size: clamp(2rem, 4vw, 4rem);
     font-weight: 700;
     line-height: 1;
   }
 
-  nav {
+  .desktop-nav {
     display: flex;
     gap: 28px;
     color: var(--muted);
     font-size: 0.96rem;
   }
 
-  nav a:hover {
+  .menu-toggle {
+    display: none;
+  }
+
+  .desktop-nav a:hover {
     color: var(--secondary);
   }
 
@@ -106,6 +146,22 @@
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+
+  .account-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(124, 87, 48, 0.3);
+    border-radius: 999px;
+    color: var(--secondary);
+    font-family: var(--font-body);
+    font-size: 0.74rem;
+    gap: 7px;
+    letter-spacing: 0.06em;
+    padding: 0 0.9rem;
+    text-transform: uppercase;
   }
 
   .cart-link {
@@ -127,7 +183,7 @@
     border-radius: 999px;
     background: var(--primary);
     color: var(--secondary-soft);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.7rem;
   }
 
@@ -146,16 +202,67 @@
   }
 
   @media (max-width: 760px) {
-    .header-inner {
-      min-height: 74px;
+    .site-header {
+      overflow: hidden;
     }
 
-    nav {
+    .header-inner {
+      min-height: 74px;
+      gap: 10px 14px;
+      padding-block: 10px 12px;
+    }
+
+    .brand {
+      font-size: 2.2rem;
+    }
+
+    .desktop-nav {
       display: none;
     }
 
-    .auth-link {
-      padding-inline: 0.75rem;
+    .actions {
+      gap: 8px;
+    }
+
+    .icon-button {
+      width: 40px;
+      height: 40px;
+    }
+
+    .account-link {
+      display: none;
+    }
+
+    .logout-button {
+      display: none;
+    }
+
+    .menu-toggle {
+      display: inline-flex;
+    }
+
+    .mobile-menu {
+      order: 3;
+      display: grid;
+      width: 100%;
+      gap: 8px;
+      border-top: 1px solid rgba(124, 87, 48, 0.16);
+      padding-top: 10px;
+    }
+
+    .mobile-menu a,
+    .mobile-menu button {
+      width: 100%;
+      border: 1px solid rgba(124, 87, 48, 0.22);
+      border-radius: 8px;
+      background: var(--surface-container);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      padding: 0.75rem 0.85rem;
+      text-align: left;
+      text-transform: uppercase;
     }
   }
 </style>

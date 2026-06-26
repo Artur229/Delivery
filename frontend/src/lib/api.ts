@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   Cart,
   Category,
+  Ingredient,
   InventoryItem,
   Order,
   Product,
@@ -12,6 +13,23 @@ import type {
 } from "$lib/types";
 
 const baseUrl = PUBLIC_API_URL || "http://localhost:3000";
+
+type ProductMutationBody = {
+  name?: string;
+  cover?: string | null;
+  price?: number | string;
+  description?: string | null;
+  categorySlugs?: string[];
+  tagSlugs?: string[];
+  ingredients?: Array<{ name: string; quantity: number | string; unit: string }>;
+};
+
+type InventoryMutationBody = {
+  name?: string;
+  quantity?: number | string;
+  unit?: string;
+  cover?: string | null;
+};
 
 export class ApiClientError extends Error {
   constructor(
@@ -100,8 +118,40 @@ export const api = {
   tags: () => apiFetch<{ tags: Tag[] }>("/tags"),
   products: () => apiFetch<{ products: Product[] }>("/products"),
   product: (slug: string) => apiFetch<Product>(`/products/${slug}`),
+  createProduct: (body: ProductMutationBody & { name: string; price: number | string }) =>
+    apiFetch<Product>("/products", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateProduct: (slug: string, body: ProductMutationBody) =>
+    apiFetch<Product>(`/products/${slug}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteProduct: (slug: string) =>
+    apiFetch<{ success: true }>(`/products/${slug}`, {
+      method: "DELETE",
+    }),
   productIngredients: (slug: string) =>
     apiFetch<{ ingredients: Product["ingredients"] }>(`/products/${slug}/ingredients`),
+  createProductIngredient: (slug: string, body: { name: string; quantity: number | string; unit: string }) =>
+    apiFetch<Ingredient>(`/products/${slug}/ingredients`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateProductIngredient: (
+    slug: string,
+    ingredientId: string,
+    body: Partial<{ name: string; quantity: number | string; unit: string }>,
+  ) =>
+    apiFetch<Ingredient>(`/products/${slug}/ingredients/${ingredientId}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteProductIngredient: (slug: string, ingredientId: string) =>
+    apiFetch<{ success: true }>(`/products/${slug}/ingredients/${ingredientId}`, {
+      method: "DELETE",
+    }),
   productReviews: (slug: string) =>
     apiFetch<{ reviews: Review[] }>(`/products/${slug}/reviews`),
   createReview: (slug: string, body: { rating: number; text: string }) =>
@@ -153,6 +203,20 @@ export const api = {
   adminOrders: () => apiFetch<{ orders: Order[] }>("/admin/orders"),
   users: () => apiFetch<{ users: User[] }>("/users"),
   inventory: () => apiFetch<{ inventory: InventoryItem[] }>("/inventory"),
+  createInventoryItem: (body: InventoryMutationBody & { name: string; quantity: number | string; unit: string }) =>
+    apiFetch<InventoryItem>("/inventory", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateInventoryItem: (slug: string, body: InventoryMutationBody) =>
+    apiFetch<InventoryItem>(`/inventory/${slug}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteInventoryItem: (slug: string) =>
+    apiFetch<{ success: true }>(`/inventory/${slug}`, {
+      method: "DELETE",
+    }),
   updateOrderStatus: (orderId: string, status: Order["status"]) =>
     apiFetch<Order>(`/orders/${orderId}/status`, {
       method: "PATCH",

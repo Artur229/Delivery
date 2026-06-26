@@ -1,23 +1,30 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import MapPicker from "$lib/components/MapPicker.svelte";
   import { api, getAccessToken } from "$lib/api";
   import { cart, cartStore } from "$lib/stores/cart";
   import { user } from "$lib/stores/auth";
-  import type { Order } from "$lib/types";
+  import { toastStore } from "$lib/stores/toast";
 
   let deliveryType: "delivery" | "pickup" = "delivery";
   let paymentType: "cash" | "card" = "cash";
   let address = "";
   let phone = "";
   let error = "";
-  let placedOrder: Order | null = null;
   let isGuest = true;
 
   $: if ($user && !address) address = $user.address ?? "";
   $: if ($user && !phone) phone = $user.phone ?? "";
   $: isGuest = !getAccessToken();
   $: if (isGuest && paymentType === "card") paymentType = "cash";
+
+  onMount(async () => {
+    if (!getAccessToken()) {
+      toastStore.info("Account required", "Sign in or create an account before checkout.");
+      await goto("/login?redirect=/checkout");
+    }
+  });
 
   const normalizePhone = (value: string) => {
     const startsWithPlus = value.trim().startsWith("+");
@@ -67,18 +74,8 @@
       }
 
       if (isGuest) {
-        const order = await api.createGuestOrder({
-          deliveryType,
-          paymentType: "cash",
-          address,
-          phone,
-          items: $cart.items.map((item) => ({
-            productSlug: item.product?.slug ?? "",
-            quantity: item.quantity,
-          })),
-        });
-        await cartStore.clear();
-        placedOrder = order;
+        toastStore.info("Account required", "Sign in or create an account before checkout.");
+        await goto("/login?redirect=/checkout");
         return;
       }
 
@@ -103,22 +100,10 @@
     <h1 class="display">Finalizing your order</h1>
   </header>
 
-  {#if placedOrder}
-    <section class="success-state paper">
-      <span class="label">Order placed</span>
-      <h2 class="headline">Thank you. We have your order.</h2>
-      <p class="body-lg">
-        Order #{placedOrder.id.slice(0, 8)} was created for ₴{placedOrder.totalPrice}. We may call the phone number you provided to confirm delivery details.
-      </p>
-      <a class="primary-button" href="/catalog">Back to catalog</a>
-    </section>
-  {:else}
-    <section class="checkout-grid">
+  <section class="checkout-grid">
     <form class="paper" on:submit|preventDefault={submit}>
       {#if isGuest}
-        <p class="guest-note">
-          You can order without an account. We only need a phone number and delivery details.
-        </p>
+        <p class="guest-note">Sign in or create an account to place this order.</p>
       {/if}
       <label>
         <span class="label">Delivery type</span>
@@ -157,8 +142,7 @@
       <button class="primary-button" type="submit">Place order · ₴{$cart?.totalPrice ?? "0.00"}</button>
     </form>
     <MapPicker {address} onAddress={(value) => (address = value)} />
-    </section>
-  {/if}
+  </section>
 </main>
 
 <style>
@@ -182,8 +166,7 @@
     padding: 28px;
   }
 
-  .guest-note,
-  .success-state {
+  .guest-note {
     color: var(--muted);
     line-height: 1.65;
   }
@@ -192,18 +175,6 @@
     border-bottom: 1px solid rgba(124, 87, 48, 0.16);
     margin: 0;
     padding-bottom: 18px;
-  }
-
-  .success-state {
-    display: grid;
-    max-width: 760px;
-    gap: 18px;
-    padding: clamp(28px, 5vw, 54px);
-  }
-
-  .success-state h2,
-  .success-state p {
-    margin: 0;
   }
 
   @media (max-width: 900px) {

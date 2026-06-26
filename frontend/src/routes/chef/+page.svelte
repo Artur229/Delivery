@@ -7,25 +7,47 @@
     Clock3,
     Flame,
     PackageSearch,
+    Plus,
     ShieldAlert,
     Soup,
+    Trash2,
     Utensils,
   } from "@lucide/svelte";
   import { ApiClientError, api, getAccessToken } from "$lib/api";
   import { realtimeOrders } from "$lib/stores/socket";
   import { user } from "$lib/stores/auth";
-  import type { InventoryItem, Order, OrderStatus, Product, User } from "$lib/types";
+  import type { Category, InventoryItem, Order, OrderStatus, Product, Tag, User } from "$lib/types";
 
   type ChefSection = "queue" | "menu" | "inventory";
 
   let orders: Order[] = [];
   let products: Product[] = [];
+  let categories: Category[] = [];
+  let tags: Tag[] = [];
   let inventory: InventoryItem[] = [];
   let currentUser: User | null = null;
   let activeSection: ChefSection = "queue";
   let error = "";
   let isLoading = true;
   let updatingOrderId = "";
+  let savingProduct = false;
+  let savingInventory = false;
+  let stockActionSlug = "";
+  let deletingProductSlug = "";
+  let newProduct = {
+    name: "",
+    price: "",
+    description: "",
+    cover: "",
+    categorySlug: "",
+    tagSlug: "",
+  };
+  let newInventoryItem = {
+    name: "",
+    quantity: "",
+    unit: "",
+    cover: "",
+  };
 
   $: mergedOrders = [
     ...$realtimeOrders,
@@ -58,10 +80,12 @@
         return;
       }
 
-      const [orderResult, productResult, inventoryResult] = await Promise.allSettled([
+      const [orderResult, productResult, inventoryResult, categoryResult, tagResult] = await Promise.allSettled([
         api.adminOrders(),
         api.products(),
         api.inventory(),
+        api.categories(),
+        api.tags(),
       ]);
 
       if (orderResult.status === "rejected") {
@@ -71,6 +95,8 @@
       orders = orderResult.value.orders;
       products = productResult.status === "fulfilled" ? productResult.value.products : [];
       inventory = inventoryResult.status === "fulfilled" ? inventoryResult.value.inventory : [];
+      categories = categoryResult.status === "fulfilled" ? categoryResult.value.categories : [];
+      tags = tagResult.status === "fulfilled" ? tagResult.value.tags : [];
     } catch (err) {
       if (err instanceof ApiClientError && (err.code === 401 || err.code === 403)) {
         error = "Chef access is required.";
@@ -106,6 +132,88 @@
       error = err instanceof Error ? err.message : "Could not update kitchen order.";
     } finally {
       updatingOrderId = "";
+    }
+  };
+
+  const createDish = async () => {
+    if (!newProduct.name.trim() || !newProduct.price) {
+      error = "Dish name and price are required.";
+      return;
+    }
+
+    savingProduct = true;
+    error = "";
+
+    try {
+      const product = await api.createProduct({
+        name: newProduct.name.trim(),
+        price: newProduct.price,
+        cover: newProduct.cover.trim() || null,
+        description: newProduct.description.trim() || null,
+        categorySlugs: newProduct.categorySlug ? [newProduct.categorySlug] : [],
+        tagSlugs: newProduct.tagSlug ? [newProduct.tagSlug] : [],
+      });
+      products = [product, ...products];
+      newProduct = { name: "", price: "", description: "", cover: "", categorySlug: "", tagSlug: "" };
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Could not create dish.";
+    } finally {
+      savingProduct = false;
+    }
+  };
+
+  const removeDish = async (product: Product) => {
+    deletingProductSlug = product.slug;
+    error = "";
+
+    try {
+      await api.deleteProduct(product.slug);
+      products = products.filter((item) => item.id !== product.id);
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Could not remove dish.";
+    } finally {
+      deletingProductSlug = "";
+    }
+  };
+
+  const createInventoryItem = async () => {
+    if (!newInventoryItem.name.trim() || !newInventoryItem.quantity || !newInventoryItem.unit.trim()) {
+      error = "Stock item, quantity, and unit are required.";
+      return;
+    }
+
+    savingInventory = true;
+    error = "";
+
+    try {
+      const item = await api.createInventoryItem({
+        name: newInventoryItem.name.trim(),
+        quantity: newInventoryItem.quantity,
+        unit: newInventoryItem.unit.trim(),
+        cover: newInventoryItem.cover.trim() || null,
+      });
+      inventory = [item, ...inventory];
+      newInventoryItem = { name: "", quantity: "", unit: "", cover: "" };
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Could not create stock item.";
+    } finally {
+      savingInventory = false;
+    }
+  };
+
+  const adjustInventory = async (item: InventoryItem, delta: number) => {
+    stockActionSlug = item.slug;
+    error = "";
+
+    try {
+      const currentQuantity = Number(item.quantity);
+      const nextQuantity = Math.max(0, currentQuantity + delta);
+      const nextItem = await api.updateInventoryItem(item.slug, { quantity: nextQuantity });
+      inventory = inventory.map((entry) => (entry.id === nextItem.id ? nextItem : entry));
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Could not update stock.";
+    } finally {
+      stockActionSlug = "";
     }
   };
 </script>
@@ -250,6 +358,54 @@
         <p>Average listed price: {products.length ? formatMoney(menuValue / products.length) : formatMoney(0)}</p>
       </section>
 
+      <form class="paper editor-form" on:submit|preventDefault={createDish}>
+        <div class="form-heading">
+          <div>
+            <span class="label">Add dish</span>
+            <h2 class="subhead">New menu item</h2>
+          </div>
+          <button class="primary-button" type="submit" disabled={savingProduct}>
+            <Plus size={17} /> {savingProduct ? "Saving" : "Add dish"}
+          </button>
+        </div>
+        <div class="form-grid">
+          <label>
+            Dish name
+            <input bind:value={newProduct.name} placeholder="Truffle pizza" />
+          </label>
+          <label>
+            Price
+            <input bind:value={newProduct.price} inputmode="decimal" placeholder="280" />
+          </label>
+          <label>
+            Category
+            <select bind:value={newProduct.categorySlug}>
+              <option value="">No category</option>
+              {#each categories as category}
+                <option value={category.slug}>{category.name}</option>
+              {/each}
+            </select>
+          </label>
+          <label>
+            Tag
+            <select bind:value={newProduct.tagSlug}>
+              <option value="">No tag</option>
+              {#each tags as tag}
+                <option value={tag.slug}>{tag.name}</option>
+              {/each}
+            </select>
+          </label>
+          <label>
+            Image URL
+            <input bind:value={newProduct.cover} placeholder="https://..." />
+          </label>
+          <label class="wide-field">
+            Description
+            <textarea bind:value={newProduct.description} rows="3" placeholder="Short kitchen description"></textarea>
+          </label>
+        </div>
+      </form>
+
       <section class="menu-grid">
         {#each products as product}
           <article class="paper menu-card">
@@ -265,6 +421,17 @@
               <h2>{product.name}</h2>
               <p>{product.description ?? "Kitchen menu item."}</p>
               <strong>{formatMoney(product.price)}</strong>
+              <div class="card-actions">
+                <a class="secondary-button" href={`/catalog/${product.slug}`}>Open</a>
+                <button
+                  class="danger-button"
+                  type="button"
+                  disabled={deletingProductSlug === product.slug}
+                  on:click={() => removeDish(product)}
+                >
+                  <Trash2 size={16} /> {deletingProductSlug === product.slug ? "Removing" : "Remove"}
+                </button>
+              </div>
             </div>
           </article>
         {/each}
@@ -286,16 +453,61 @@
           </div>
         </article>
 
+        <form class="paper editor-form stock-editor" on:submit|preventDefault={createInventoryItem}>
+          <div class="form-heading">
+            <div>
+              <span class="label">New stock</span>
+              <h2 class="subhead">Add inventory item</h2>
+            </div>
+            <button class="primary-button" type="submit" disabled={savingInventory}>
+              <Plus size={17} /> {savingInventory ? "Saving" : "Add"}
+            </button>
+          </div>
+          <div class="form-grid stock-form-grid">
+            <label>
+              Item
+              <input bind:value={newInventoryItem.name} placeholder="Mozzarella" />
+            </label>
+            <label>
+              Quantity
+              <input bind:value={newInventoryItem.quantity} inputmode="decimal" placeholder="20" />
+            </label>
+            <label>
+              Unit
+              <input bind:value={newInventoryItem.unit} placeholder="kg" />
+            </label>
+          </div>
+        </form>
+
         <section class="stock-table paper">
           <div class="stock-row stock-head">
             <span>Item</span>
             <span>Quantity</span>
+            <span>Adjust</span>
             <span>Updated</span>
           </div>
           {#each inventory as item}
             <div class:low={Number(item.quantity) <= 10} class="stock-row">
               <strong>{item.name}</strong>
               <span>{item.quantity} {item.unit}</span>
+              <span class="stock-actions">
+                <button
+                  type="button"
+                  disabled={stockActionSlug === item.slug}
+                  aria-label={`Decrease ${item.name}`}
+                  on:click={() => adjustInventory(item, -1)}
+                >
+                  -
+                </button>
+                <button
+                  type="button"
+                  disabled={stockActionSlug === item.slug}
+                  aria-label={`Increase ${item.name}`}
+                  on:click={() => adjustInventory(item, 1)}
+                >
+                  +
+                </button>
+              </span>
               <span>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "No date"}</span>
             </div>
           {/each}
@@ -322,7 +534,7 @@
 
   .chef-hero h1 {
     margin: 8px 0 14px;
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: clamp(3rem, 8vw, 5.8rem);
     line-height: 0.95;
   }
@@ -373,7 +585,7 @@
 
   .metric-card strong {
     color: var(--secondary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 3.2rem;
     line-height: 1;
   }
@@ -430,12 +642,13 @@
     place-items: center;
     border-radius: 999px;
     background: rgba(124, 87, 48, 0.14);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.75rem;
   }
 
   .ticket-list,
-  .menu-grid {
+  .menu-grid,
+  .form-grid {
     display: grid;
     gap: 16px;
   }
@@ -443,6 +656,7 @@
   .ticket-card,
   .empty-state,
   .menu-summary,
+  .editor-form,
   .low-stock-panel,
   .stock-table {
     padding: clamp(22px, 4vw, 34px);
@@ -466,14 +680,14 @@
   .ticket-top h2,
   .menu-card h2 {
     margin: 5px 0 0;
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: clamp(1.8rem, 4vw, 2.8rem);
   }
 
   .ticket-top strong,
   .menu-card strong {
     color: var(--secondary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 2rem;
   }
 
@@ -499,7 +713,7 @@
   .stock-row span,
   .ready-pill {
     color: var(--muted);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.78rem;
     text-transform: uppercase;
   }
@@ -544,6 +758,58 @@
     margin: 6px 0 0;
   }
 
+  .editor-form {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 16px;
+  }
+
+  .form-heading,
+  .card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stock-form-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .editor-form label {
+    display: grid;
+    gap: 8px;
+    color: var(--secondary);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+  }
+
+  .editor-form input,
+  .editor-form select,
+  .editor-form textarea {
+    width: 100%;
+    border: 1px solid rgba(124, 87, 48, 0.24);
+    border-radius: 8px;
+    background: var(--surface-container-lowest);
+    color: var(--primary);
+    font: inherit;
+    padding: 0.9rem 1rem;
+    text-transform: none;
+  }
+
+  .editor-form textarea {
+    resize: vertical;
+  }
+
+  .wide-field {
+    grid-column: span 2;
+  }
+
   .menu-card {
     display: grid;
     grid-template-columns: 180px 1fr;
@@ -566,6 +832,30 @@
     object-fit: cover;
   }
 
+  .card-actions {
+    justify-content: start;
+    margin-top: 18px;
+  }
+
+  .danger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(180, 55, 45, 0.28);
+    border-radius: 999px;
+    background: rgba(180, 55, 45, 0.08);
+    color: var(--error);
+    cursor: pointer;
+    gap: 8px;
+    padding: 0.85rem 1.1rem;
+    text-transform: uppercase;
+  }
+
+  .danger-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
   .stock-layout {
     display: grid;
     grid-template-columns: 0.85fr 1.4fr;
@@ -584,13 +874,49 @@
 
   .stock-head {
     color: var(--secondary);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.78rem;
     text-transform: uppercase;
   }
 
   .stock-row.low {
     color: var(--error);
+  }
+
+  .stock-table {
+    grid-column: span 2;
+  }
+
+  .stock-row {
+    display: grid;
+    grid-template-columns: minmax(160px, 1fr) auto auto auto;
+    gap: 14px;
+    align-items: center;
+    border-bottom: 1px solid rgba(124, 87, 48, 0.14);
+    padding: 10px 0;
+  }
+
+  .stock-actions {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .stock-actions button {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid rgba(124, 87, 48, 0.24);
+    border-radius: 999px;
+    background: var(--surface-container-lowest);
+    color: var(--secondary);
+    cursor: pointer;
+    font-size: 1rem;
+  }
+
+  .stock-actions button:disabled {
+    cursor: wait;
+    opacity: 0.55;
   }
 
   @media (max-width: 900px) {
@@ -601,6 +927,10 @@
 
     .menu-card {
       grid-template-columns: 130px 1fr;
+    }
+
+    .stock-table {
+      grid-column: span 1;
     }
   }
 
@@ -615,7 +945,9 @@
     }
 
     .chef-metrics,
-    .chef-tabs {
+    .chef-tabs,
+    .form-grid,
+    .stock-form-grid {
       grid-template-columns: 1fr;
     }
 
@@ -627,10 +959,24 @@
       min-width: 0;
     }
 
+    .wide-field {
+      grid-column: span 1;
+    }
+
+    .form-heading,
+    .card-actions,
     .menu-card,
     .ticket-items div,
-    .stock-row,
     .stock-stack div {
+      grid-template-columns: 1fr;
+    }
+
+    .form-heading,
+    .card-actions {
+      display: grid;
+    }
+
+    .stock-row {
       grid-template-columns: 1fr;
     }
   }

@@ -37,7 +37,7 @@
 
   .footer-brand {
     color: var(--secondary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-logo);
     font-size: 2rem;
     font-weight: 700;
   }

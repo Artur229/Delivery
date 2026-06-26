@@ -159,7 +159,7 @@
 
   .avatar span {
     color: var(--secondary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 4rem;
   }
 

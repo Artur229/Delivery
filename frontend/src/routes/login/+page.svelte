@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
   import { ArrowRight } from "@lucide/svelte";
   import { authStore } from "$lib/stores/auth";
   import { cartStore } from "$lib/stores/cart";
@@ -9,11 +10,19 @@
   let password = "";
   let error = "";
 
+  const getSafeRedirect = () => {
+    const redirect = $page.url.searchParams.get("redirect") || "";
+    return redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "";
+  };
+
+  $: redirectTo = getSafeRedirect();
+  $: isCheckoutRedirect = redirectTo === "/checkout";
+
   const submit = async () => {
     error = "";
     try {
       await authStore.login(email, password);
-      await cartStore.load().catch(() => undefined);
+      await cartStore.mergeGuestIntoAccount().catch(() => cartStore.load().catch(() => undefined));
       connectSocket();
       const currentUser = await authStore.loadMe();
 
@@ -32,7 +41,7 @@
         return;
       }
 
-      await goto("/catalog");
+      await goto(redirectTo || "/catalog");
     } catch (err) {
       error = err instanceof Error ? err.message : "Login failed";
     }
@@ -54,6 +63,9 @@
     <form class="auth-card" on:submit|preventDefault={submit}>
       <span class="label">Welcome back</span>
       <h2 class="headline">Curate your culinary journey.</h2>
+      {#if isCheckoutRedirect}
+        <p class="auth-note">Sign in to continue checkout with your saved basket.</p>
+      {/if}
       <label>
         <span class="label">Email</span>
         <input class="ink-input" bind:value={email} type="email" autocomplete="email" />
@@ -68,7 +80,7 @@
       <button class="primary-button" type="submit">
         Sign in <ArrowRight size={18} />
       </button>
-      <p>New here? <a href="/register">Register here</a></p>
+      <p>New here? <a href={isCheckoutRedirect ? "/register?redirect=/checkout" : "/register"}>Register here</a></p>
     </form>
   </section>
 </main>
@@ -121,6 +133,13 @@
 
   .auth-card p {
     color: var(--muted);
+  }
+
+  .auth-note {
+    border: 1px solid rgba(124, 87, 48, 0.18);
+    background: var(--surface-container-low);
+    margin: 0;
+    padding: 14px 16px;
   }
 
   .auth-card a {

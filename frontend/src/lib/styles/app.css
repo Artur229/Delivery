@@ -2,6 +2,9 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-heading: "Outfit", system-ui, sans-serif;
+  --font-logo: "Playfair Display", serif;
   --background: #faf9f6;
   --surface: #faf9f6;
   --surface-low: #f4f3f1;
@@ -31,7 +34,7 @@ body {
     linear-gradient(rgba(250, 249, 246, 0.94), rgba(250, 249, 246, 0.94)),
     url("data:image/svg+xml,%3Csvg width='160' height='160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.11'/%3E%3C/svg%3E");
   color: var(--text);
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0;
 }
 
@@ -53,21 +56,21 @@ select {
 }
 
 .display {
-  font-family: "Playfair Display", serif;
+  font-family: var(--font-heading);
   font-size: clamp(3rem, 7vw, 6.5rem);
   font-weight: 700;
   line-height: 0.95;
 }
 
 .headline {
-  font-family: "Playfair Display", serif;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 3.75rem);
   font-weight: 600;
   line-height: 1.05;
 }
 
 .subhead {
-  font-family: "Playfair Display", serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.45rem, 2vw, 2.1rem);
   font-weight: 600;
   line-height: 1.15;
@@ -81,7 +84,7 @@ select {
 
 .label {
   color: var(--secondary);
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-body);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -143,7 +146,7 @@ select {
   border-radius: 16px;
   background: var(--primary);
   color: var(--secondary-soft);
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-body);
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   padding: 1rem 1.4rem;
@@ -159,7 +162,7 @@ select {
   border-radius: 16px;
   background: transparent;
   color: var(--secondary);
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-body);
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   padding: 0.9rem 1.2rem;
@@ -184,7 +187,7 @@ select {
   border-radius: 999px;
   background: var(--tertiary);
   color: var(--muted);
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-body);
   font-size: 0.74rem;
   letter-spacing: 0.05em;
   padding: 0.45rem 0.75rem;

@@ -167,7 +167,7 @@
 
   .buy-row strong {
     color: var(--secondary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 2.4rem;
   }
 

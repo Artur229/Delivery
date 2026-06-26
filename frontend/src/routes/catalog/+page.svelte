@@ -169,7 +169,7 @@
     background: var(--surface-container);
     color: var(--muted);
     cursor: pointer;
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.75rem;
     padding: 0.58rem 0.85rem;
     text-transform: uppercase;
@@ -224,7 +224,7 @@
     background: var(--surface-container);
     color: var(--primary);
     cursor: pointer;
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.78rem;
     padding: 0.78rem 0.9rem;
     text-transform: uppercase;
@@ -232,7 +232,7 @@
 
   .result-count {
     color: var(--secondary);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
     font-size: 0.78rem;
     letter-spacing: 0.06em;
     margin: 0 0 22px;

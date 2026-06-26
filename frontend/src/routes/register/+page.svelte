@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
   import { ArrowRight } from "@lucide/svelte";
   import { authStore } from "$lib/stores/auth";
   import { cartStore } from "$lib/stores/cart";
@@ -12,13 +13,21 @@
   let address = "";
   let error = "";
 
+  const getSafeRedirect = () => {
+    const redirect = $page.url.searchParams.get("redirect") || "";
+    return redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "";
+  };
+
+  $: redirectTo = getSafeRedirect();
+  $: isCheckoutRedirect = redirectTo === "/checkout";
+
   const submit = async () => {
     error = "";
     try {
       await authStore.register({ name, email, password, phone, address });
-      await cartStore.load().catch(() => undefined);
+      await cartStore.mergeGuestIntoAccount().catch(() => cartStore.load().catch(() => undefined));
       connectSocket();
-      await goto("/catalog");
+      await goto(redirectTo || "/catalog");
     } catch (err) {
       error = err instanceof Error ? err.message : "Registration failed";
     }
@@ -36,6 +45,9 @@
     <form on:submit|preventDefault={submit}>
       <span class="label">The art of craft</span>
       <h1 class="display">Join the collective</h1>
+      {#if isCheckoutRedirect}
+        <p class="auth-note">Create an account to place the order and keep your order history.</p>
+      {/if}
       <label>
         <span class="label">Full name</span>
         <input class="ink-input" bind:value={name} required />
@@ -62,7 +74,7 @@
       <button class="primary-button" type="submit">
         Begin <ArrowRight size={18} />
       </button>
-      <p>Already a member? <a href="/login">Sign in here</a></p>
+      <p>Already a member? <a href={isCheckoutRedirect ? "/login?redirect=/checkout" : "/login"}>Sign in here</a></p>
     </form>
   </section>
 </main>
@@ -99,6 +111,13 @@
 
   p {
     color: var(--muted);
+  }
+
+  .auth-note {
+    border: 1px solid rgba(124, 87, 48, 0.18);
+    background: var(--surface-container-low);
+    margin: 0;
+    padding: 14px 16px;
   }
 
   a {

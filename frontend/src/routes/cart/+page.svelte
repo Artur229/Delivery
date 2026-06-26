@@ -1,8 +1,10 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { Minus, Plus, Trash2 } from "@lucide/svelte";
+  import { getAccessToken } from "$lib/api";
   import { getProductImage } from "$lib/media/products";
   import { cart, cartStore } from "$lib/stores/cart";
+  import { toastStore } from "$lib/stores/toast";
 
   const updateQuantity = (itemId: string, quantity: number) => {
     if (quantity < 1) {
@@ -11,6 +13,16 @@
     }
 
     cartStore.update(itemId, quantity);
+  };
+
+  const checkout = async () => {
+    if (!getAccessToken()) {
+      toastStore.info("Account required", "Sign in or create an account to place your order.");
+      await goto("/login?redirect=/checkout");
+      return;
+    }
+
+    await goto("/checkout");
   };
 </script>
 
@@ -54,7 +66,7 @@
       <aside class="paper summary">
         <span class="label">Total</span>
         <strong>₴{$cart.totalPrice}</strong>
-        <button class="primary-button" on:click={() => goto("/checkout")}>Checkout</button>
+        <button class="primary-button" on:click={checkout}>Checkout</button>
         <button class="secondary-button" on:click={cartStore.clear}>Clear cart</button>
       </aside>
     </section>
@@ -114,7 +126,7 @@
     width: 34px;
     place-items: center;
     color: var(--primary);
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-body);
   }
 
   .summary,
@@ -126,7 +138,7 @@
 
   .summary strong {
     color: var(--primary);
-    font-family: "Playfair Display", serif;
+    font-family: var(--font-heading);
     font-size: 3rem;
   }
 
