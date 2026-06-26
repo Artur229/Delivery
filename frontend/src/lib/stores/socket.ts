@@ -1,4 +1,4 @@
-import { PUBLIC_WS_URL } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 import { get, writable } from "svelte/store";
 import { getAccessToken } from "$lib/api";
 import { cartStore } from "$lib/stores/cart";
@@ -105,7 +105,7 @@ const notifyOrderCancelled = (order: Order) => {
 
 export const connectSocket = () => {
   const token = getAccessToken();
-  const wsUrl = PUBLIC_WS_URL || (import.meta.env.DEV ? "ws://localhost:3000/ws" : "");
+  const wsUrl = env.PUBLIC_WS_URL || (import.meta.env.DEV ? "ws://localhost:3000/ws" : "");
 
   if (!token || !wsUrl || socket?.readyState === WebSocket.OPEN) {
     return;
